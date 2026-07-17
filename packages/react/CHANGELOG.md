@@ -1,5 +1,11 @@
 # @feedock/react
 
+## 0.7.0
+
+### Minor Changes
+
+- 8b3fe7c: The public project config now carries `launcherIconOnly`, the founder's "show just the icon" launcher setting. Additive — existing consumers are unaffected.
+
 ## 0.6.0
 
 ### Minor Changes
