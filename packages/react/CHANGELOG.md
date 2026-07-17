@@ -1,5 +1,20 @@
 # @feedock/react
 
+## 0.6.0
+
+### Minor Changes
+
+- 0adac30: The feedback board and changelog now page through their full history. Both fetched only the first 20 items and dropped the rest — everything past page one was unreachable. They now show a "Load more" control that fetches and appends the next page, and hides itself at the end.
+
+### Patch Changes
+
+- 6755137: A batch of correctness and robustness fixes from a full review:
+
+  - No longer crashes on a feedback status the SDK version doesn't recognize (falls back to Open), and a corrupt stored visitor identity is discarded instead of bricking every write.
+  - Empty states share one gray and read honestly — a search with no matches no longer says "be the first to post", and a failed load doesn't read as an empty board.
+  - Dismissing the "what's new" toast clears the unread badge across tabs; the update list and `/feedback` are each fetched once on open.
+  - Token-gated writes reject their promise when unverified instead of throwing; the comment count, similar-suggestion staleness, avatar retry, and attachment keys are all fixed; button text on a light brand color is now readable; large files show GB; `&nbsp;` no longer shows literally in update excerpts. `FeedockContextValue` is now exported.
+
 ## 0.5.1
 
 ### Patch Changes
