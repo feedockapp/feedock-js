@@ -1,0 +1,25 @@
+{
+  "name": "@feedock/sanitize",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "clean": "rm -rf dist .turbo"
+  },
+  "dependencies": {
+    "sanitize-html": "^2.17.5"
+  },
+  "devDependencies": {
+    "@types/sanitize-html": "^2.16.1",
+    "eslint": "^10.6.0",
+    "typescript": "^6.0.3"
+  }
+}

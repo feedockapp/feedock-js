@@ -1,0 +1,72 @@
+{
+  "name": "@feedock/mcp",
+  "version": "0.3.4",
+  "description": "Model Context Protocol server that drives the Feedock loop (feedback → roadmap → tasks → changelog) from Claude and any MCP client.",
+  "license": "MIT",
+  "author": "Feedock",
+  "homepage": "https://feedock.com/developers#mcp-setup",
+  "bugs": {
+    "url": "https://feedock.com/p/feedock"
+  },
+  "keywords": [
+    "feedock",
+    "mcp",
+    "model-context-protocol",
+    "feedback",
+    "roadmap",
+    "changelog",
+    "claude"
+  ],
+  "type": "module",
+  "bin": {
+    "feedock-mcp": "dist/cli.js"
+  },
+  "main": "./dist/index.js",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=20.19"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
+  "scripts": {
+    "build": "node build.mjs && tsc -p tsconfig.json --emitDeclarationOnly --incremental false",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "clean": "rm -rf dist .turbo tsconfig.tsbuildinfo"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": ">=1.26.0 <2",
+    "graphql": "^16",
+    "graphql-request": "^7",
+    "sanitize-html": "^2.17.5",
+    "zod": "^3.25 || ^4"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9",
+    "@feedock/sanitize": "workspace:*",
+    "@types/node": "*",
+    "@types/sanitize-html": "^2.16.1",
+    "esbuild": "^0.25",
+    "eslint": "^9",
+    "typescript": "*",
+    "typescript-eslint": "^8",
+    "vitest": "^4.1.9"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/feedockapp/feedock-js.git",
+    "directory": "packages/mcp"
+  }
+}

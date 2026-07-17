@@ -1,0 +1,70 @@
+{
+  "$schema": "./scenarios.schema.note.md",
+  "description": "Read-only, independent, verifiable eval scenarios for @feedock/mcp, per docs/features/mcp-server.md §8 (Phase-1 evals / mcp-builder Phase 4). Each question is multi-hop (forces several tool calls), stable (the answer will not drift on a frozen seeded project), and scored by string-match against `expectedAnswerContains`. Writes are excluded (non-reproducible); the friction tools (publish/merge) are tested separately via the unit + manual confirm-flow checks. Run these against a SEEDED project (packages/db seed fixture) through the stdio server + MCP Inspector. Target: >= 90% pass.",
+  "harness": {
+    "transport": "stdio",
+    "runner": "npx @modelcontextprotocol/inspector --cli node packages/mcp/dist/cli.js",
+    "env": {
+      "FEEDOCK_API_URL": "https://api.feedock.com",
+      "FEEDOCK_API_TOKEN": "fdk_pat_<seeded-project-PAT>"
+    },
+    "scoring": "string-match — pass if every string in expectedAnswerContains appears (case-insensitive) in the model's final answer",
+    "passTarget": 0.9
+  },
+  "scenarios": [
+    {
+      "id": "open-feedback-top-by-votes",
+      "loopStage": "feedback",
+      "question": "How many Open feedback items have at least 10 votes, and what is the title of the top one by votes?",
+      "toolsExercised": ["feedock_list_feedback"],
+      "multiHopReason": "Filter by status=Open + sort=top, then count those with voteCount>=10 and read the top item's title.",
+      "expectedAnswerContains": ["<seed: count>", "<seed: top item title>"],
+      "writes": false
+    },
+    {
+      "id": "roadmap-now-people-asked",
+      "loopStage": "roadmap",
+      "question": "Which roadmap items are in the Now lane, and how many people asked for each?",
+      "toolsExercised": ["feedock_list_roadmap"],
+      "multiHopReason": "List roadmap items, filter to column=Now, and read each item's peopleAsked rollup.",
+      "expectedAnswerContains": ["<seed: Now item title(s)>", "<seed: peopleAsked per item>"],
+      "writes": false
+    },
+    {
+      "id": "task-status-and-linked-pr",
+      "loopStage": "tasks",
+      "question": "For task T-<seed number>, what is its status and which pull request is linked to it?",
+      "toolsExercised": ["feedock_list_tasks", "feedock_get_task"],
+      "multiHopReason": "Resolve the task id from its number via list_tasks, then get_task to read status + the linked git ref (PR).",
+      "expectedAnswerContains": ["<seed: task status>", "<seed: linked PR id/url>"],
+      "writes": false
+    },
+    {
+      "id": "milestone-highest-progress",
+      "loopStage": "milestones",
+      "question": "Which milestone has the highest progress %, and how many of its tasks are Done?",
+      "toolsExercised": ["feedock_list_milestones", "feedock_get_milestone"],
+      "multiHopReason": "List milestones to find the max progressPct, then get_milestone for its doneTaskCount / Done tasks.",
+      "expectedAnswerContains": ["<seed: milestone title>", "<seed: doneTaskCount>"],
+      "writes": false
+    },
+    {
+      "id": "latest-published-changelog",
+      "loopStage": "changelog",
+      "question": "What is the title of the most recent Published changelog entry?",
+      "toolsExercised": ["feedock_list_changelog"],
+      "multiHopReason": "List changelog entries, apply the client-side state=Published filter, and read the newest entry's title.",
+      "expectedAnswerContains": ["<seed: latest published entry title>"],
+      "writes": false
+    },
+    {
+      "id": "overview-status-breakdown",
+      "loopStage": "overview",
+      "question": "Across the whole board, how many feedback items are in each status, and are any of those counts possibly truncated?",
+      "toolsExercised": ["feedock_overview"],
+      "multiHopReason": "Call feedock_overview, read the per-status tally, and report the mayBeTruncated/atCap flags (lower-bound awareness).",
+      "expectedAnswerContains": ["<seed: per-status counts>", "mayBeTruncated"],
+      "writes": false
+    }
+  ]
+}
