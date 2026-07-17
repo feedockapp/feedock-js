@@ -1,14 +1,9 @@
 "use client";
 
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-  useSyncExternalStore,
-} from "react";
+import { useCallback, useMemo, useSyncExternalStore } from "react";
 
 import { useFeedockContext } from "../../context";
+import { usePublicResource } from "../../shared/hooks/use-public-resource";
 import { readSeenUpdate, subscribeSeenUpdate, writeSeenUpdate } from "./seen";
 
 export type UnreadUpdate = {
@@ -25,7 +20,12 @@ export type UnreadUpdate = {
  */
 export function useUnreadUpdate(): UnreadUpdate {
   const { client, slug } = useFeedockContext();
-  const [latestId, setLatestId] = useState<string | null>(null);
+
+  // The newest published id, derived from the shared (deduped) updates fetch —
+  // no own effect or state. A failed fetch leaves data null, so the badge just
+  // stays dark rather than lying about an unread it couldn't load.
+  const { data } = usePublicResource((c) => c.listUpdates(), [client]);
+  const latestId = data?.items[0]?.id ?? null;
 
   // Subscribed, not snapshotted into state on mount: the toast writes this key
   // and the badge has to notice. Reading it once left the badge lit after a
@@ -36,24 +36,6 @@ export function useUnreadUpdate(): UnreadUpdate {
     // No localStorage while server-rendering — nothing is seen yet.
     () => null,
   );
-
-  useEffect(() => {
-    let active = true;
-    client
-      .listUpdates()
-      .then((page) => {
-        if (active) {
-          setLatestId(page.items[0]?.id ?? null);
-        }
-      })
-      .catch(() => undefined);
-    return () => {
-      active = false;
-    };
-    // `client` alone: there is one per (apiBase, slug), so it already changes
-    // when the project does. exhaustive-deps doesn't flag a redundant dep, so
-    // the leftover `slug` here sat harmless but lying about what this reads.
-  }, [client]);
 
   const markSeen = useCallback(() => {
     if (latestId) {

@@ -3,8 +3,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useFeedockContext } from "../../context";
-import { readSeenUpdate, writeSeenUpdate } from "./seen";
+import { usePublicResource } from "../../shared/hooks/use-public-resource";
 import type { PublicUpdate } from "../../types";
+import { readSeenUpdate, writeSeenUpdate } from "./seen";
 
 /** Matches the toast's CSS fade-out, so `gone` flips after it has left. */
 const FADE_OUT_MS = 260;
@@ -33,29 +34,22 @@ export function useLatestUpdate(): UseLatestUpdate {
   const [visible, setVisible] = useState(false);
   const [gone, setGone] = useState(false);
 
+  // The newest update comes from the shared (deduped, error-captured) fetch, so
+  // the toast, the badge, and the Changelog tab don't each hit /updates. Only
+  // the show/fade/dismiss lifecycle is this hook's own.
+  const { data } = usePublicResource((c) => c.listUpdates(), [client]);
+
   useEffect(() => {
-    let active = true;
-    client
-      .listUpdates()
-      .then((page) => {
-        if (!active) {
-          return;
-        }
-        const latest = page.items[0];
-        if (!latest) {
-          return;
-        }
-        if (readSeenUpdate(slug) === latest.id) {
-          return;
-        }
-        setUpdate(latest);
-        requestAnimationFrame(() => active && setVisible(true));
-      })
-      .catch(() => undefined);
-    return () => {
-      active = false;
-    };
-  }, [client, slug]);
+    const latest = data?.items[0];
+    if (!latest || readSeenUpdate(slug) === latest.id) {
+      return;
+    }
+    setUpdate(latest);
+    // rAF so the initial hidden state paints before `visible` flips — that's
+    // what makes it fade IN rather than appear. Cancelled if we unmount first.
+    const raf = requestAnimationFrame(() => setVisible(true));
+    return () => cancelAnimationFrame(raf);
+  }, [data, slug]);
 
   const markSeen = useCallback(() => {
     if (update) {
