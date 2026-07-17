@@ -1,5 +1,17 @@
 # @feedock/mcp
 
+## 0.4.2
+
+### Patch Changes
+
+- badcdf2: `feedock_create_task` and `feedock_update_task` now accept `assigneeIds`
+  (the whole assignee set, first = primary), `labelIds`, and `startDate` — the
+  API's `CreateTaskInput`/`UpdateTaskInput` already supported them, but the tools
+  only exposed a single `assigneeId` and `dueDate`. On update, an empty array
+  clears assignees/labels and `null` clears `startDate`; omitted fields stay
+  untouched. So an agent can now populate a task the way the dashboard shows it
+  (multiple assignees, labels, a start–due range).
+
 ## 0.4.1
 
 ### Patch Changes
