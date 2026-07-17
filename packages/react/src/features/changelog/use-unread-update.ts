@@ -50,7 +50,10 @@ export function useUnreadUpdate(): UnreadUpdate {
     return () => {
       active = false;
     };
-  }, [client, slug]);
+    // `client` alone: there is one per (apiBase, slug), so it already changes
+    // when the project does. exhaustive-deps doesn't flag a redundant dep, so
+    // the leftover `slug` here sat harmless but lying about what this reads.
+  }, [client]);
 
   const markSeen = useCallback(() => {
     if (latestId) {
