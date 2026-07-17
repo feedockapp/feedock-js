@@ -1,6 +1,6 @@
 {
   "name": "@feedock/mcp",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "description": "Model Context Protocol server that drives the Feedock loop (feedback → roadmap → tasks → changelog) from Claude and any MCP client.",
   "license": "MIT",
   "author": "Feedock",

@@ -1,5 +1,14 @@
 # @feedock/react
 
+## 0.4.4
+
+### Patch Changes
+
+- d1695af: Point "report a bug" at the board's own domain, feedback.feedock.com.
+
+  Our public board moved to a dedicated custom domain. `bugs.url` and the README
+  links now go there instead of to the /p/feedock path on the marketing site.
+
 ## 0.4.3
 
 ### Patch Changes

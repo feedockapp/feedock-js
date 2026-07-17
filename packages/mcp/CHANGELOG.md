@@ -1,5 +1,32 @@
 # @feedock/mcp
 
+## 0.3.5
+
+### Patch Changes
+
+- d1695af: Point "report a bug" at the board's own domain, feedback.feedock.com.
+
+  Our public board moved to a dedicated custom domain. `bugs.url` and the README
+  links now go there instead of to the /p/feedock path on the marketing site.
+
+- 6a793c4: Convert markdown to HTML when creating a roadmap item or an official feedback
+  comment.
+
+  Both forwarded the raw string, so a model writing markdown put literal `##` and
+  backticks on the board. The other rich-text writes (tasks, docs, changelog)
+  already converted; these two were missed. A sweep test now covers every
+  rich-text write so the next one cannot skip it.
+
+- 01aaf71: `feedock_overview` now names the project a project-bound token is working in.
+
+  It reported `project: null` for bound tokens, because the identity came only from
+  the in-process session that all-projects tokens get after `feedock_select_project`.
+  Bound tokens are the case that most needs it: with a server configured per project,
+  that field is the only thing telling an agent whose board it is about to write to.
+
+  Needs an API that exposes `currentProject`; against an older one the overview still
+  returns the full snapshot and leaves the project unnamed.
+
 ## 0.3.4
 
 ### Patch Changes
