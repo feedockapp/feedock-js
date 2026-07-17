@@ -37,6 +37,7 @@ import {
   toToolError,
   type ToolErrorResult,
 } from "../lib/errors.js";
+import { toRichTextHtml } from "../lib/markdown.js";
 import { paginate } from "../lib/pagination.js";
 import { sanitizeRichText } from "../lib/sanitize.js";
 import {
@@ -254,7 +255,9 @@ const AddFeedbackCommentInput = {
     .string()
     .min(1)
     .max(5000)
-    .describe("the official member reply (plain text or rich-text HTML)"),
+    .describe(
+      "the official member reply — markdown, plain text, or rich-text HTML",
+    ),
   // M-27: a comment posts a member-visible reply that surfaces on the public
   // portal — a write that prompt-injected feedback text must not trigger silently.
   // Require an explicit confirmation, mirroring merge_feedback/publish_changelog.
@@ -518,7 +521,12 @@ export function registerFeedbackTools(
         const data = await client.request<{
           addFeedbackComment: CommentRow;
         }>(ADD_FEEDBACK_COMMENT_MUTATION, {
-          input: { feedbackId: args.id, body: args.body },
+          // An official comment renders as rich text only when it already LOOKS
+          // like HTML (`comment.isOfficial && looksLikeRichHtml(...)` in the
+          // public mapper); anything else is escaped and shown verbatim. So raw
+          // markdown reaches the reader as literal `##` and backticks. Convert,
+          // and the reply renders the way it was written.
+          input: { feedbackId: args.id, body: toRichTextHtml(args.body) },
         });
         return ok({ comment: mapComment(data.addFeedbackComment) });
       } catch (err) {

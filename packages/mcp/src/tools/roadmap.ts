@@ -22,6 +22,7 @@ import {
   ROADMAP_ITEMS_QUERY,
 } from "../client/operations.js";
 import { toApiToolError, toToolError } from "../lib/errors.js";
+import { toRichTextHtml } from "../lib/markdown.js";
 import { paginate } from "../lib/pagination.js";
 import { sanitizeRichText } from "../lib/sanitize.js";
 import {
@@ -205,14 +206,23 @@ export function registerRoadmapTools(
     },
     async (args): Promise<CallToolResult> => {
       try {
-        const { confirm, ...input } = args;
+        const { confirm, ...rest } = args;
         // M-27: a PUBLIC roadmap item is a public write — require confirm:true.
-        if (input.visibility === VisibilityEnum.enum.PUBLIC && confirm !== true) {
+        if (rest.visibility === VisibilityEnum.enum.PUBLIC && confirm !== true) {
           return toToolError(
             "Creating a PUBLIC roadmap item posts to the public roadmap. " +
               "Re-check the title/description and retry with confirm:true.",
           );
         }
+        // Models write markdown; every Feedock rich-text surface stores HTML. Skip
+        // this and the board shows literal `##` and backticks — the same bug the
+        // other write tools fixed, in the one tool that was missed.
+        const input = {
+          ...rest,
+          ...(rest.description !== undefined
+            ? { description: toRichTextHtml(rest.description) }
+            : {}),
+        };
         const data = await client.request<{
           createRoadmapItem: RoadmapItemRow;
         }>(CREATE_ROADMAP_ITEM_MUTATION, { input });
