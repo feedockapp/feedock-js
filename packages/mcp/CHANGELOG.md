@@ -1,5 +1,22 @@
 # @feedock/mcp
 
+## 0.4.0
+
+### Minor Changes
+
+- 4e0b570: Add `feedock_update_roadmap_item` — edit a roadmap item's title, description,
+  visibility, target window, or linked milestone.
+
+  The MCP could create a roadmap item and then never correct it: the API has
+  `updateRoadmapItem`, the MCP never exposed it. Markdown in the description is
+  converted like every other rich-text write.
+
+  Editing an item that is (or becomes) PUBLIC needs `confirm:true`. The gate reads
+  the item's current visibility rather than trusting the arguments, because an edit
+  to live public copy is a public write even when the call says nothing about
+  visibility. Lanes are deliberately not editable here — moving to Shipped emails
+  requesters, and that gate stays in `feedock_move_roadmap_item`.
+
 ## 0.3.5
 
 ### Patch Changes

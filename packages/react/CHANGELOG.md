@@ -1,5 +1,13 @@
 # @feedock/react
 
+## 0.5.0
+
+### Minor Changes
+
+- 49617e2: Dates now follow the visitor's locale everywhere. The roadmap and home cards pinned `en-US`, so a visitor in Berlin read "Mar 3" on the roadmap and "3. März" in the changelog byline beside it. All four date formatters are now one, and it respects the reader's locale — so ship dates outside the US will render differently than before.
+
+  A malformed date also renders as empty rather than "Invalid Date".
+
 ## 0.4.4
 
 ### Patch Changes

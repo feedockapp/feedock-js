@@ -1,6 +1,6 @@
 {
   "name": "@feedock/react",
-  "version": "0.4.4",
+  "version": "0.5.0",
   "description": "React SDK to embed a Feedock feedback board, roadmap, and changelog directly in your app.",
   "license": "MIT",
   "author": "Feedock",
