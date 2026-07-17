@@ -243,9 +243,21 @@ const CreateTaskInputShape = {
   priority: TaskPriorityEnum.optional().describe(
     "Urgent·High·Medium·Low·None (defaults to None)",
   ),
-  assigneeId: uuid.optional().describe("the member to assign"),
+  assigneeId: uuid.optional().describe("the member to assign (single)"),
+  assigneeIds: z
+    .array(uuid)
+    .optional()
+    .describe("assign multiple members; the first is the primary"),
   milestoneId: uuid.optional().describe("group under this milestone"),
   roadmapItemId: uuid.optional().describe("down-link from a roadmap item"),
+  labelIds: z
+    .array(uuid)
+    .optional()
+    .describe("attach these project labels (label ids)"),
+  startDate: z
+    .string()
+    .optional()
+    .describe("ISO 8601 planned start (must be on/before dueDate)"),
 } as const;
 
 const TaskOutput = { task: TaskItem } as const;
@@ -271,7 +283,13 @@ const UpdateTaskInputShape = {
   assigneeId: uuid
     .nullable()
     .optional()
-    .describe("the member to assign; null unassigns"),
+    .describe("the single member to assign; null unassigns"),
+  assigneeIds: z
+    .array(uuid)
+    .optional()
+    .describe(
+      "replace the whole assignee set (first = primary); [] clears all assignees",
+    ),
   milestoneId: uuid
     .nullable()
     .optional()
@@ -280,6 +298,15 @@ const UpdateTaskInputShape = {
     .nullable()
     .optional()
     .describe("down-link from a roadmap item; null unlinks"),
+  labelIds: z
+    .array(uuid)
+    .optional()
+    .describe("replace the task's labels (label ids); [] clears all labels"),
+  startDate: z
+    .string()
+    .nullable()
+    .optional()
+    .describe("ISO 8601 planned start (<= dueDate); null clears it"),
   dueDate: z
     .string()
     .nullable()
@@ -400,7 +427,7 @@ export function registerTaskTools(server: McpServer, ctx: ToolContext): void {
     {
       title: "Create a task",
       description:
-        "Create an internal task (defaults to Backlog). Optionally set priority, assignee, milestone, or a roadmap-item down-link. Additive. Returns the created task.",
+        "Create an internal task (defaults to Backlog). Optionally set priority, one or many assignees, labels, a start date, milestone, or a roadmap-item down-link. Additive. Returns the created task.",
       inputSchema: CreateTaskInputShape,
       outputSchema: TaskOutput,
       annotations: {
@@ -419,8 +446,15 @@ export function registerTaskTools(server: McpServer, ctx: ToolContext): void {
             : {}),
           ...(args.priority ? { priority: args.priority } : {}),
           ...(args.assigneeId ? { assigneeId: args.assigneeId } : {}),
+          ...(args.assigneeIds !== undefined
+            ? { assigneeIds: args.assigneeIds }
+            : {}),
           ...(args.milestoneId ? { milestoneId: args.milestoneId } : {}),
           ...(args.roadmapItemId ? { roadmapItemId: args.roadmapItemId } : {}),
+          ...(args.labelIds !== undefined ? { labelIds: args.labelIds } : {}),
+          ...(args.startDate !== undefined
+            ? { startDate: args.startDate }
+            : {}),
         };
         const data = await client.request<CreateTaskData>(
           CREATE_TASK_MUTATION,
@@ -444,7 +478,7 @@ export function registerTaskTools(server: McpServer, ctx: ToolContext): void {
     {
       title: "Update a task",
       description:
-        "Edit a task's fields: title, description (replaces the whole body — read it first with `feedock_get_task`), priority, assignee, milestone, roadmap link, or due date. Pass null to CLEAR a nullable field; omitted fields stay untouched. Status moves stay with `feedock_update_task_status`. Returns the updated task.",
+        "Edit a task's fields: title, description (replaces the whole body — read it first with `feedock_get_task`), priority, assignees (single `assigneeId` or the whole `assigneeIds` set), labels, start date, milestone, roadmap link, or due date. Pass null to CLEAR a nullable field (an empty array clears assignees/labels); omitted fields stay untouched. Status moves stay with `feedock_update_task_status`. Returns the updated task.",
       inputSchema: UpdateTaskInputShape,
       outputSchema: TaskOutput,
       annotations: {
@@ -473,11 +507,18 @@ export function registerTaskTools(server: McpServer, ctx: ToolContext): void {
           ...(args.assigneeId !== undefined
             ? { assigneeId: args.assigneeId }
             : {}),
+          ...(args.assigneeIds !== undefined
+            ? { assigneeIds: args.assigneeIds }
+            : {}),
           ...(args.milestoneId !== undefined
             ? { milestoneId: args.milestoneId }
             : {}),
           ...(args.roadmapItemId !== undefined
             ? { roadmapItemId: args.roadmapItemId }
+            : {}),
+          ...(args.labelIds !== undefined ? { labelIds: args.labelIds } : {}),
+          ...(args.startDate !== undefined
+            ? { startDate: args.startDate }
             : {}),
           ...(args.dueDate !== undefined ? { dueDate: args.dueDate } : {}),
         };

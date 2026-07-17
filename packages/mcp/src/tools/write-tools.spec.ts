@@ -137,6 +137,46 @@ describe("update_task null-clear semantics", () => {
   });
 });
 
+describe("task write forwards multi-assignee, labels, and start date", () => {
+  const A = "11111111-1111-4111-8111-111111111111";
+  const B = "22222222-2222-4222-8222-222222222222";
+  const L = "33333333-3333-4333-8333-333333333333";
+
+  it("update_task forwards assigneeIds, labelIds, and startDate (empty array clears)", async () => {
+    const { cap, client } = taskCatalog([{ updateTask: API_TASK }]);
+    await cap.get("feedock_update_task").run({
+      id: TASK_ID,
+      assigneeIds: [A, B],
+      labelIds: [],
+      startDate: "2026-08-01T00:00:00Z",
+    });
+    const input = (client.calls[0]?.variables as { input: object }).input;
+    expect(input).toEqual({
+      id: TASK_ID,
+      assigneeIds: [A, B],
+      labelIds: [],
+      startDate: "2026-08-01T00:00:00Z",
+    });
+  });
+
+  it("create_task forwards assigneeIds, labelIds, and startDate", async () => {
+    const { cap, client } = taskCatalog([{ createTask: API_TASK }]);
+    await cap.get("feedock_create_task").run({
+      title: "Ship it",
+      assigneeIds: [A],
+      labelIds: [L],
+      startDate: "2026-08-01T00:00:00Z",
+    });
+    const input = (client.calls[0]?.variables as { input: object }).input;
+    expect(input).toEqual({
+      title: "Ship it",
+      assigneeIds: [A],
+      labelIds: [L],
+      startDate: "2026-08-01T00:00:00Z",
+    });
+  });
+});
+
 describe("write responses sanitize rich text in both channels", () => {
   it.each([
     [
