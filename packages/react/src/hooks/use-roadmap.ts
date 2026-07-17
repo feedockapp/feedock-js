@@ -23,7 +23,10 @@ function roadmapReducer(state: UseRoadmap, action: RoadmapAction): UseRoadmap {
     case "loaded":
       return { columns: action.columns, loading: false, error: null };
     case "failed":
-      return { columns: [], loading: false, error: action.error };
+      // Keep the columns a failed REFETCH couldn't replace. Clearing them threw
+      // away a roadmap the visitor was already reading because a later reload
+      // (the widget bumps reloadKey on every open) happened to fail.
+      return { ...state, loading: false, error: action.error };
   }
 }
 
