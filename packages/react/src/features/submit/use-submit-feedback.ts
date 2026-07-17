@@ -2,6 +2,8 @@
 
 import { useEffect, useReducer, useRef, useState } from "react";
 
+import type { PublicFeedbackListItem } from "../../types";
+import { useFeedock } from "../../use-feedock";
 import {
   collectFiles,
   isDraftSubmittable,
@@ -9,8 +11,6 @@ import {
   type DraftErrors,
   type FeedbackDraft,
 } from "./submit-feedback-form";
-import type { PublicFeedbackListItem } from "../../types";
-import { useFeedock } from "../../use-feedock";
 
 type UseSubmitFeedbackArgs = {
   onSubmitted: (item: PublicFeedbackListItem) => void;
@@ -48,13 +48,27 @@ type State = {
   error: string | null;
 };
 
+/** Reducer action tags, named so the switch and the dispatches can't drift. */
+const SUBMIT_ACTION = {
+  SetField: "setField",
+  AddFiles: "addFiles",
+  RemoveFile: "removeFile",
+  SubmitStart: "submitStart",
+  SubmitFailed: "submitFailed",
+  SubmitDone: "submitDone",
+} as const;
+
 type Action =
-  | { type: "setField"; field: keyof FeedbackDraft; value: string | boolean }
-  | { type: "addFiles"; incoming: FileList | null }
-  | { type: "removeFile"; index: number }
-  | { type: "submitStart" }
-  | { type: "submitFailed"; error: string }
-  | { type: "submitDone" };
+  | {
+      type: typeof SUBMIT_ACTION.SetField;
+      field: keyof FeedbackDraft;
+      value: string | boolean;
+    }
+  | { type: typeof SUBMIT_ACTION.AddFiles; incoming: FileList | null }
+  | { type: typeof SUBMIT_ACTION.RemoveFile; index: number }
+  | { type: typeof SUBMIT_ACTION.SubmitStart }
+  | { type: typeof SUBMIT_ACTION.SubmitFailed; error: string }
+  | { type: typeof SUBMIT_ACTION.SubmitDone };
 
 const INITIAL_STATE: State = {
   draft: { title: "", body: "", notifyMe: false },
@@ -65,25 +79,25 @@ const INITIAL_STATE: State = {
 
 function reducer(state: State, action: Action): State {
   switch (action.type) {
-    case "setField":
+    case SUBMIT_ACTION.SetField:
       return {
         ...state,
         draft: { ...state.draft, [action.field]: action.value },
       };
-    case "addFiles": {
+    case SUBMIT_ACTION.AddFiles: {
       const { files, error } = collectFiles(state.files, action.incoming);
       return { ...state, files, error };
     }
-    case "removeFile":
+    case SUBMIT_ACTION.RemoveFile:
       return {
         ...state,
         files: state.files.filter((_, index) => index !== action.index),
       };
-    case "submitStart":
+    case SUBMIT_ACTION.SubmitStart:
       return { ...state, busy: true, error: null };
-    case "submitFailed":
+    case SUBMIT_ACTION.SubmitFailed:
       return { ...state, busy: false, error: action.error };
-    case "submitDone":
+    case SUBMIT_ACTION.SubmitDone:
       return { ...state, busy: false };
     default:
       return state;
@@ -113,11 +127,11 @@ export function useSubmitFeedback({
   }, []);
 
   function setField(field: keyof FeedbackDraft, value: string | boolean) {
-    dispatch({ type: "setField", field, value });
+    dispatch({ type: SUBMIT_ACTION.SetField, field, value });
   }
 
   function addFiles(selected: FileList | null) {
-    dispatch({ type: "addFiles", incoming: selected });
+    dispatch({ type: SUBMIT_ACTION.AddFiles, incoming: selected });
     if (fileInput.current) {
       fileInput.current.value = "";
     }
@@ -135,7 +149,7 @@ export function useSubmitFeedback({
   }
 
   async function onSubmit() {
-    dispatch({ type: "submitStart" });
+    dispatch({ type: SUBMIT_ACTION.SubmitStart });
     try {
       const item = await submit({
         title: state.draft.title.trim(),
@@ -149,16 +163,16 @@ export function useSubmitFeedback({
         // open so the note is visible; the item is already saved server-side.
         const plural = failed > 1 ? "s" : "";
         dispatch({
-          type: "submitFailed",
+          type: SUBMIT_ACTION.SubmitFailed,
           error: `Your post was created, but ${failed} file${plural} couldn't be uploaded.`,
         });
         return;
       }
-      dispatch({ type: "submitDone" });
+      dispatch({ type: SUBMIT_ACTION.SubmitDone });
       onSubmitted(item);
     } catch (caught) {
       dispatch({
-        type: "submitFailed",
+        type: SUBMIT_ACTION.SubmitFailed,
         error: caught instanceof Error ? caught.message : "Could not submit.",
       });
     }
@@ -173,7 +187,7 @@ export function useSubmitFeedback({
     setNotifyMe: (value) => setField("notifyMe", value),
     files: state.files,
     addFiles,
-    removeFile: (index) => dispatch({ type: "removeFile", index }),
+    removeFile: (index) => dispatch({ type: SUBMIT_ACTION.RemoveFile, index }),
     fileInput,
     errors: validateDraft(state.draft),
     canSubmit: isDraftSubmittable(state.draft),

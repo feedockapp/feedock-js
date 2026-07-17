@@ -14,21 +14,28 @@ export type PublicResource<T> = {
   error: string | null;
 };
 
+/** Reducer action tags, named so the switch and the dispatches can't drift. */
+const RESOURCE_ACTION = {
+  Loading: "loading",
+  Loaded: "loaded",
+  Failed: "failed",
+} as const;
+
 type ResourceAction<T> =
-  | { type: "loading" }
-  | { type: "loaded"; data: T }
-  | { type: "failed"; error: string };
+  | { type: typeof RESOURCE_ACTION.Loading }
+  | { type: typeof RESOURCE_ACTION.Loaded; data: T }
+  | { type: typeof RESOURCE_ACTION.Failed; error: string };
 
 function resourceReducer<T>(
   state: PublicResource<T>,
   action: ResourceAction<T>,
 ): PublicResource<T> {
   switch (action.type) {
-    case "loading":
+    case RESOURCE_ACTION.Loading:
       return { ...state, loading: true, error: null };
-    case "loaded":
+    case RESOURCE_ACTION.Loaded:
       return { data: action.data, loading: false, error: null };
-    case "failed":
+    case RESOURCE_ACTION.Failed:
       // Keep the last good data. A failed REFETCH must not blank a surface the
       // visitor is already reading — the widget bumps its reload on every open,
       // so a transient failure there would otherwise wipe the screen. (This is
@@ -70,17 +77,17 @@ export function usePublicResource<T>(
 
   useEffect(() => {
     let active = true;
-    dispatch({ type: "loading" });
+    dispatch({ type: RESOURCE_ACTION.Loading });
     fetcher(client)
       .then((data) => {
         if (active) {
-          dispatch({ type: "loaded", data });
+          dispatch({ type: RESOURCE_ACTION.Loaded, data });
         }
       })
       .catch((e: unknown) => {
         if (active) {
           dispatch({
-            type: "failed",
+            type: RESOURCE_ACTION.Failed,
             error: e instanceof Error ? e.message : "Failed to load.",
           });
         }

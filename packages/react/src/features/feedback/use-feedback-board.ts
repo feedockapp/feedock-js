@@ -15,25 +15,44 @@ type FeedbackListState = {
   error: string | null;
 };
 
+/** Reducer action tags, named so the switch and the dispatches can't drift. */
+const FEEDBACK_LIST_ACTION = {
+  Loading: "loading",
+  Loaded: "loaded",
+  Failed: "failed",
+  VoteCount: "vote-count",
+  Submitted: "submitted",
+} as const;
+
 type FeedbackListAction =
-  | { type: "loading" }
-  | { type: "loaded"; items: PublicFeedbackListItem[] }
-  | { type: "failed"; error: string }
-  | { type: "vote-count"; id: string; voteCount: number }
-  | { type: "submitted"; item: PublicFeedbackListItem };
+  | { type: typeof FEEDBACK_LIST_ACTION.Loading }
+  | {
+      type: typeof FEEDBACK_LIST_ACTION.Loaded;
+      items: PublicFeedbackListItem[];
+    }
+  | { type: typeof FEEDBACK_LIST_ACTION.Failed; error: string }
+  | {
+      type: typeof FEEDBACK_LIST_ACTION.VoteCount;
+      id: string;
+      voteCount: number;
+    }
+  | {
+      type: typeof FEEDBACK_LIST_ACTION.Submitted;
+      item: PublicFeedbackListItem;
+    };
 
 function feedbackListReducer(
   state: FeedbackListState,
   action: FeedbackListAction,
 ): FeedbackListState {
   switch (action.type) {
-    case "loading":
+    case FEEDBACK_LIST_ACTION.Loading:
       return { ...state, loading: true, error: null };
-    case "loaded":
+    case FEEDBACK_LIST_ACTION.Loaded:
       return { items: action.items, loading: false, error: null };
-    case "failed":
+    case FEEDBACK_LIST_ACTION.Failed:
       return { ...state, loading: false, error: action.error };
-    case "vote-count":
+    case FEEDBACK_LIST_ACTION.VoteCount:
       return {
         ...state,
         error: null,
@@ -41,7 +60,7 @@ function feedbackListReducer(
           it.id === action.id ? { ...it, voteCount: action.voteCount } : it,
         ),
       };
-    case "submitted":
+    case FEEDBACK_LIST_ACTION.Submitted:
       return { ...state, error: null, items: [action.item, ...state.items] };
   }
 }
@@ -90,20 +109,23 @@ export function useFeedbackBoard(
   const q = query.trim();
   useEffect(() => {
     let active = true;
-    dispatchList({ type: "loading" });
+    dispatchList({ type: FEEDBACK_LIST_ACTION.Loading });
     // A search hits the server (it can't be a page-1-only client filter) — the
     // API returns matches across all pages, allowlisted + keyset-paginated.
     client
       .listFeedback({ sort, q: q || undefined })
       .then((page) => {
         if (active) {
-          dispatchList({ type: "loaded", items: page.items });
+          dispatchList({
+            type: FEEDBACK_LIST_ACTION.Loaded,
+            items: page.items,
+          });
         }
       })
       .catch((e: unknown) => {
         if (active) {
           dispatchList({
-            type: "failed",
+            type: FEEDBACK_LIST_ACTION.Failed,
             error: e instanceof Error ? e.message : "Failed to load.",
           });
         }
@@ -118,10 +140,14 @@ export function useFeedbackBoard(
     async (id: string, token: string) => {
       try {
         const result = await client.vote(token, id);
-        dispatchList({ type: "vote-count", id, voteCount: result.voteCount });
+        dispatchList({
+          type: FEEDBACK_LIST_ACTION.VoteCount,
+          id,
+          voteCount: result.voteCount,
+        });
       } catch (e) {
         dispatchList({
-          type: "failed",
+          type: FEEDBACK_LIST_ACTION.Failed,
           error: e instanceof Error ? e.message : "Vote failed.",
         });
       }
@@ -163,12 +189,12 @@ export function useFeedbackBoard(
 
   const applyVoteCount = useCallback(
     (id: string, voteCount: number) =>
-      dispatchList({ type: "vote-count", id, voteCount }),
+      dispatchList({ type: FEEDBACK_LIST_ACTION.VoteCount, id, voteCount }),
     [],
   );
 
   const onSubmitted = useCallback((item: PublicFeedbackListItem) => {
-    dispatchList({ type: "submitted", item });
+    dispatchList({ type: FEEDBACK_LIST_ACTION.Submitted, item });
     setComposerOpen(false);
   }, []);
 
