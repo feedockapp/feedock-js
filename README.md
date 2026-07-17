@@ -5,7 +5,7 @@ The source for the packages [Feedock](https://feedock.com) publishes to npm.
 > **This is a read-only mirror.** These packages are developed in Feedock's main
 > repository, which is private, and synced here on release. **Pull requests here
 > cannot be merged** — the next sync overwrites them. Please post issues and
-> requests on [feedock.com/p/feedock](https://feedock.com/p/feedock) instead.
+> requests on [feedback.feedock.com](https://feedback.feedock.com) instead.
 
 | Package | npm | What it is |
 |---|---|---|

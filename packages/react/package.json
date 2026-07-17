@@ -6,7 +6,7 @@
   "author": "Feedock",
   "homepage": "https://feedock.com/developers#react-sdk",
   "bugs": {
-    "url": "https://feedock.com/p/feedock"
+    "url": "https://feedback.feedock.com"
   },
   "keywords": [
     "feedock",
@@ -40,7 +40,8 @@
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
-    "clean": "rm -rf dist .turbo"
+    "api:probe": "esbuild dist/index.js --bundle --format=esm --outfile=.api-probe.mjs --external:react --external:react-dom --log-level=error && node --input-type=module -e \"import('./.api-probe.mjs').then(m=>console.log(Object.keys(m).sort().join('\\n')))\" && rm -f .api-probe.mjs",
+    "clean": "rm -rf dist .turbo .api-probe.mjs"
   },
   "peerDependencies": {
     "react": "^18 || ^19",
@@ -49,7 +50,9 @@
   "devDependencies": {
     "@eslint/js": "^9",
     "@types/react": "^19",
+    "esbuild": "^0.25",
     "eslint": "^9",
+    "eslint-plugin-react-hooks": "^7.1.1",
     "react": "^19",
     "typescript": "^6.0.3",
     "typescript-eslint": "^8"

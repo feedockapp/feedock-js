@@ -131,7 +131,7 @@ Three properties hold across every tool:
 
 ## Bugs
 
-Post them on our own board: [feedock.com/p/feedock](https://feedock.com/p/feedock).
+Post them on our own board: [feedback.feedock.com](https://feedback.feedock.com).
 
 ## License
 

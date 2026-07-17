@@ -11,7 +11,7 @@ Feedock project inside your own app instead of on a hosted portal. You need a
 project at [feedock.com](https://feedock.com) — `projectSlug` below is its handle.
 
 To see what these components look like before installing, our own board runs on
-Feedock: [feedock.com/p/feedock](https://feedock.com/p/feedock).
+Feedock: [feedback.feedock.com](https://feedback.feedock.com).
 
 ## Install
 
@@ -203,6 +203,6 @@ server-rendered and indexable, use the hosted portal instead of this package.
 
 - Docs: [feedock.com/developers#react-sdk](https://feedock.com/developers#react-sdk)
 - Source (read-only mirror): [github.com/feedockapp/feedock-js](https://github.com/feedockapp/feedock-js)
-- Feedback and bugs: [feedock.com/p/feedock](https://feedock.com/p/feedock)
+- Feedback and bugs: [feedback.feedock.com](https://feedback.feedock.com)
 
 MIT

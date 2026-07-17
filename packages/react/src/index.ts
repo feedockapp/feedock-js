@@ -4,17 +4,17 @@
 export { FeedockProvider, useFeedockContext } from "./context";
 export type { FeedockProviderProps, VisitorIdentity } from "./context";
 export { useFeedock } from "./use-feedock";
-export { useUnreadUpdate } from "./hooks/use-unread-update";
-export type { UnreadUpdate } from "./hooks/use-unread-update";
-export { FeedbackBoard } from "./components/feedback-board";
-export type { FeedbackBoardProps } from "./components/feedback-board";
-export { Home } from "./components/home";
-export type { HomeProps } from "./components/home";
-export { Composer } from "./components/composer";
-export { Roadmap } from "./components/roadmap";
-export { Changelog } from "./components/changelog";
-export { LatestUpdate } from "./components/latest-update";
-export { Spinner } from "./components/spinner";
+export { useUnreadUpdate } from "./features/changelog";
+export type { UnreadUpdate } from "./features/changelog";
+export { FeedbackBoard } from "./features/feedback";
+export type { FeedbackBoardProps } from "./features/feedback";
+export { Home } from "./features/home";
+export type { HomeProps } from "./features/home";
+export { Composer } from "./features/submit";
+export { Roadmap } from "./features/roadmap";
+export { Changelog } from "./features/changelog";
+export { LatestUpdate } from "./features/changelog";
+export { Spinner } from "./shared/ui/spinner";
 export { FeedockClient } from "./client";
 export type {
   FeedbackQuery,
