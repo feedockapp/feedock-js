@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 
+import { secondaryText } from "../../shared/lib/surface";
 import type { ResolvedTheme } from "../../theme";
 
 /**
@@ -12,7 +13,9 @@ export function feedbackBoardListStyles(theme: ResolvedTheme) {
     // theme.muted (not secondaryText) — the SDK's placeholder copy tone.
     empty: {
       fontSize: 13,
-      color: theme.muted,
+      // One empty-state gray across every surface — matches Home + Roadmap
+      // (secondaryText), not the slightly different theme.muted this used before.
+      color: secondaryText(theme),
       padding: "16px 0",
     } as CSSProperties,
     // Positions the refetch spinner over the list without reflowing it.
@@ -36,4 +39,6 @@ export function feedbackBoardListStyles(theme: ResolvedTheme) {
   };
 }
 
-export type FeedbackBoardListStyles = ReturnType<typeof feedbackBoardListStyles>;
+export type FeedbackBoardListStyles = ReturnType<
+  typeof feedbackBoardListStyles
+>;

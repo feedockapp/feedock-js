@@ -2,15 +2,15 @@
 
 import { useState } from "react";
 
-import { useDebouncedValue } from "./use-debounced-value";
-import { useFeedbackBoard } from "./use-feedback-board";
-import { feedbackBoardStyles } from "./feedback-board-styles";
 import { useDetailSelection } from "../../shared/hooks/use-detail-selection";
 import { useStyles } from "../../shared/lib/use-styles";
 import { IdentityPrompt, SubmitForm } from "../submit";
 import { ClockIcon, SearchIcon, TrendingIcon } from "./feedback-board-icons";
 import { FeedbackBoardList } from "./feedback-board-list";
+import { feedbackBoardStyles } from "./feedback-board-styles";
 import { FeedbackDetail } from "./feedback-detail";
+import { useDebouncedValue } from "./use-debounced-value";
+import { useFeedbackBoard } from "./use-feedback-board";
 
 export interface FeedbackBoardProps {
   defaultSort?: "top" | "new";
@@ -145,7 +145,10 @@ export function FeedbackBoard({
   );
 
   const composerEl = composerOpen ? (
-    <SubmitForm onSubmitted={onSubmitted} onCancel={() => setComposerOpen(false)} />
+    <SubmitForm
+      onSubmitted={onSubmitted}
+      onCancel={() => setComposerOpen(false)}
+    />
   ) : null;
   const errorEl = error ? <div style={styles.error}>{error}</div> : null;
   const listEl = (
@@ -154,6 +157,7 @@ export function FeedbackBoard({
       loading={loading}
       onVote={onVote}
       onSelect={select}
+      searching={debounced.trim().length > 0}
     />
   );
 

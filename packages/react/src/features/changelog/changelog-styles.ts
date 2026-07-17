@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 
+import { secondaryText } from "../../shared/lib/surface";
 import type { ResolvedTheme } from "../../theme";
 
 /**
@@ -19,7 +20,9 @@ export function changelogStyles(theme: ResolvedTheme) {
       gap: 20,
     } as CSSProperties,
     /** The error + "no updates yet" lines. */
-    message: { fontSize: 13, color: theme.muted } as CSSProperties,
+    // Shared empty/error line — one gray across every surface (secondaryText),
+    // matching Home + Roadmap rather than the slightly different theme.muted.
+    message: { fontSize: 13, color: secondaryText(theme) } as CSSProperties,
     /* A full-width divider BETWEEN entries — the primary separator, matching the
        Home tab's group divider. */
     groupDivider: {

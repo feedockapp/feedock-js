@@ -2,7 +2,6 @@
 
 import { useCallback, type ReactNode } from "react";
 
-import { homeStyles } from "./home-styles";
 import { useStyles } from "../../shared/lib/use-styles";
 import { SpinnerBlock } from "../../shared/ui/spinner";
 import { useChangelog } from "../changelog";
@@ -10,14 +9,15 @@ import { useTrendingFeedback } from "../feedback";
 import { ROADMAP_COLUMN, useRoadmap } from "../roadmap";
 import { HomeFeedbackRow } from "./home-feedback-row";
 import { HomeHero } from "./home-hero";
-import { HomeRoadmapRow } from "./home-roadmap-row";
-import { HomeSection } from "./home-section";
-import { HomeUpdateRow } from "./home-update-row";
 import {
   ProgressSectionIcon,
   TrendingSectionIcon,
   UpdatesSectionIcon,
 } from "./home-icons";
+import { HomeRoadmapRow } from "./home-roadmap-row";
+import { HomeSection } from "./home-section";
+import { homeStyles } from "./home-styles";
+import { HomeUpdateRow } from "./home-update-row";
 
 export type HomeProps = {
   /** Content tabs the founder enabled — a section shows only if its tab is on. */
@@ -51,8 +51,11 @@ export function Home({ tabs, onNavigate, reloadKey = 0 }: HomeProps) {
 
   const { items: updates } = useChangelog(reloadKey);
   const { columns } = useRoadmap(reloadKey);
-  const { items: trending, loading: trendingLoading } =
-    useTrendingFeedback(reloadKey);
+  const {
+    items: trending,
+    loading: trendingLoading,
+    error: trendingError,
+  } = useTrendingFeedback(reloadKey);
 
   const showFeedback = tabs.includes(HOME_TAB.Feedback);
   const showRoadmap = tabs.includes(HOME_TAB.Roadmap);
@@ -61,9 +64,10 @@ export function Home({ tabs, onNavigate, reloadKey = 0 }: HomeProps) {
   const hero = showUpdates ? updates[0] : undefined;
   const recentUpdates = showUpdates ? updates.slice(1, 1 + MAX_ROWS) : [];
   const inProgress = showRoadmap
-    ? (
-        columns.find((c) => c.column === ROADMAP_COLUMN.Now)?.items ?? []
-      ).slice(0, MAX_ROWS)
+    ? (columns.find((c) => c.column === ROADMAP_COLUMN.Now)?.items ?? []).slice(
+        0,
+        MAX_ROWS,
+      )
     : [];
   const topFeedback = showFeedback ? trending.slice(0, MAX_ROWS) : [];
 
@@ -123,6 +127,9 @@ export function Home({ tabs, onNavigate, reloadKey = 0 }: HomeProps) {
           ))
         ) : trendingLoading ? (
           <SpinnerBlock size={18} />
+        ) : trendingError ? (
+          // A failed load is not an empty board — don't imply there's nothing.
+          <p style={styles.empty}>Couldn&apos;t load feedback.</p>
         ) : (
           <p style={styles.empty}>No feedback yet.</p>
         )}

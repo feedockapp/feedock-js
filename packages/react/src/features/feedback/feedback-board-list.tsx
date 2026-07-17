@@ -1,10 +1,10 @@
 "use client";
 
-import { feedbackBoardListStyles } from "./feedback-board-list-styles";
 import { useStyles } from "../../shared/lib/use-styles";
-import type { PublicFeedbackListItem } from "../../types";
-import { FeedbackListItem } from "./feedback-list-item";
 import { Spinner, SpinnerBlock } from "../../shared/ui/spinner";
+import type { PublicFeedbackListItem } from "../../types";
+import { feedbackBoardListStyles } from "./feedback-board-list-styles";
+import { FeedbackListItem } from "./feedback-list-item";
 
 export type Props = {
   items: PublicFeedbackListItem[];
@@ -12,6 +12,8 @@ export type Props = {
   onVote: (id: string) => void;
   /** Open an item's detail view. */
   onSelect?: (id: string) => void;
+  /** A search is active — an empty list means "no matches", not "no feedback". */
+  searching?: boolean;
 };
 
 /**
@@ -19,7 +21,13 @@ export type Props = {
  * Keeps the current list visible (dimmed) while a sort change refetches, so
  * switching Top/New never flashes an empty "Loading…" state.
  */
-export function FeedbackBoardList({ items, loading, onVote, onSelect }: Props) {
+export function FeedbackBoardList({
+  items,
+  loading,
+  onVote,
+  onSelect,
+  searching,
+}: Props) {
   const styles = useStyles(feedbackBoardListStyles);
 
   if (loading && items.length === 0) {
@@ -27,7 +35,15 @@ export function FeedbackBoardList({ items, loading, onVote, onSelect }: Props) {
   }
 
   if (items.length === 0) {
-    return <div style={styles.empty}>No feedback yet. Be the first to post.</div>;
+    // A search that matched nothing isn't an empty board — don't tell someone
+    // who just searched to "be the first to post".
+    return (
+      <div style={styles.empty}>
+        {searching
+          ? "No matching feedback."
+          : "No feedback yet. Be the first to post."}
+      </div>
+    );
   }
 
   return (

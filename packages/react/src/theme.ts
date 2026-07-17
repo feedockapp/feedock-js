@@ -64,6 +64,9 @@ export function statusTone(status: FeedbackStatus): {
     Shipped: { fg: "#2ED47A", label: "Shipped" },
     Declined: { fg: "#D74643", label: "Declined" },
   };
-  const tone = tones[status];
+  // Fall back to Open for a status this SDK version doesn't know — an older SDK
+  // against a newer API would otherwise read `undefined.fg` and crash every card
+  // it renders. StatusIcon guards the same way.
+  const tone = tones[status] ?? tones.Open;
   return { fg: tone.fg, bg: `${tone.fg}22`, label: tone.label };
 }

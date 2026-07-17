@@ -20,6 +20,16 @@ export interface VisitorIdentity {
   email: string;
 }
 
+/** True only for a well-formed persisted identity (both fields present strings). */
+export function isVisitorIdentity(value: unknown): value is VisitorIdentity {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    typeof (value as Record<string, unknown>).token === "string" &&
+    typeof (value as Record<string, unknown>).email === "string"
+  );
+}
+
 interface FeedockContextValue {
   client: FeedockClient;
   slug: string;
@@ -211,8 +221,15 @@ export function FeedockProvider({
   useEffect(() => {
     try {
       const raw = window.localStorage.getItem(storageKey);
-      if (raw) {
-        setIdentityState(JSON.parse(raw) as VisitorIdentity);
+      const parsed: unknown = raw ? JSON.parse(raw) : null;
+      // Shape-check before trusting it: a corrupt/foreign value (e.g. `{}`) would
+      // otherwise make `isVerified` true while `token` is undefined, so every
+      // write sends `Bearer undefined` and fails with no self-heal. A bad value
+      // is dropped so the visitor just re-verifies.
+      if (isVisitorIdentity(parsed)) {
+        setIdentityState(parsed);
+      } else if (raw) {
+        window.localStorage.removeItem(storageKey);
       }
     } catch {
       // ignore storage/parse errors — visitor just re-verifies
@@ -280,15 +297,16 @@ export function FeedockProvider({
   // awaits it always sees the latest session (not a stale closure).
   const identityRef = useRef(identity);
   identityRef.current = identity;
-  const ensureIdentity = useCallback(async (): Promise<VisitorIdentity | null> => {
-    if (identityRef.current) {
-      return identityRef.current;
-    }
-    if (resolveRef.current) {
-      return await resolveRef.current;
-    }
-    return null;
-  }, []);
+  const ensureIdentity =
+    useCallback(async (): Promise<VisitorIdentity | null> => {
+      if (identityRef.current) {
+        return identityRef.current;
+      }
+      if (resolveRef.current) {
+        return await resolveRef.current;
+      }
+      return null;
+    }, []);
 
   const value = useMemo<FeedockContextValue>(
     () => ({
