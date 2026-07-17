@@ -195,9 +195,25 @@ export function markdownToHtml(markdown: string): string {
  * that already sends HTML (or an app round-tripping a body we returned) is
  * passed through the sanitizer unchanged, so both shapes are safe and neither
  * is double-converted.
+ *
+ * Deciding which is which used to be "does it contain any HTML tag?", which
+ * mis-routed two real inputs onto the board as raw text (literal `##` headings
+ * and backticked spans):
+ *   1. Markdown a caller pre-wrapped in a single `<p>…</p>`.
+ *   2. Markdown that merely *mentions* a tag in its prose (a bug report whose
+ *      body talks about `<p>`), which the tag test can't tell from real HTML.
+ * So: peel off a *lone* outer paragraph first (case 1 — the genuine rich HTML we
+ * return is multi-block, never one `<p>` around everything), then pass a body to
+ * the sanitizer ONLY when it carries HTML tags AND opens no markdown headings.
+ * A heading-led body is markdown a caller wrote, tag mentions and all, so it is
+ * converted (case 2). The sanitizer still runs on the ORIGINAL body, so genuine
+ * round-tripped HTML is untouched.
  */
 export function toRichTextHtml(body: string): string {
-  return looksLikeHtml(body) ? sanitizeRichText(body) : markdownToHtml(body);
+  const inner = unwrapLoneParagraph(body);
+  return looksLikeHtml(inner) && !hasMarkdownHeading(inner)
+    ? sanitizeRichText(body)
+    : markdownToHtml(inner);
 }
 
 /** A body that already carries block-level HTML needs no markdown conversion. */
@@ -205,4 +221,26 @@ function looksLikeHtml(body: string): boolean {
   return /<(p|h[1-4]|ul|ol|li|pre|blockquote|strong|em|code|br|hr|a)\b[^>]*>/i.test(
     body,
   );
+}
+
+/**
+ * An ATX heading at the start of any line — the clearest tell that a body is
+ * markdown source. The HTML we return emits `<h2>` etc., never a literal
+ * line-start `## `, so this fires only on markdown a caller wrote. Kept to
+ * headings (not lists/fences) so a `#` inside a round-tripped `<pre>` block
+ * can't be mistaken for one.
+ */
+function hasMarkdownHeading(body: string): boolean {
+  return /(^|\n)[ \t]{0,3}#{1,6}[ \t]/.test(body);
+}
+
+/**
+ * If the whole body is a single `<p>…</p>` (the common mis-wrap), return its
+ * inner content; otherwise return the body unchanged. A real multi-paragraph
+ * body ends past the first `</p>`, so it never matches — and even a wrapper
+ * around more HTML is caught by {@link looksLikeHtml} on the inner content.
+ */
+function unwrapLoneParagraph(body: string): string {
+  const match = /^\s*<p\b[^>]*>([\s\S]*)<\/p>\s*$/i.exec(body);
+  return match ? (match[1] ?? "") : body;
 }

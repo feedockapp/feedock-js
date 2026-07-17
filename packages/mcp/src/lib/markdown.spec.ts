@@ -146,4 +146,44 @@ describe("toRichTextHtml", () => {
       "<p>ok</p>",
     );
   });
+
+  // The bug: a caller that pre-wrapped its markdown in one <p> used to hit the
+  // passthrough branch, so `##`/backticks landed on the board as literal text.
+  // A lone wrapping <p> is now peeled off and the markdown inside is converted.
+  it("converts markdown a caller wrapped in a single outer <p>", () => {
+    expect(
+      toRichTextHtml("<p>## Summary\n\nBody with `code`.</p>"),
+    ).toBe("<h2>Summary</h2><p>Body with <code>code</code>.</p>");
+  });
+
+  it("converts a lone-<p>-wrapped heading (the reported shape)", () => {
+    expect(toRichTextHtml("<p>## Summary of the bug</p>")).toBe(
+      "<h2>Summary of the bug</h2>",
+    );
+  });
+
+  // Peeling the wrapper must NOT re-convert genuine round-tripped HTML: a lone
+  // <p> that carries real inline tags is still passed through untouched, because
+  // the inner content still looks like HTML and the ORIGINAL body is sanitized.
+  it("still passes a lone <p> with real inline HTML through unchanged", () => {
+    expect(toRichTextHtml("<p>plain <strong>bold</strong> text</p>")).toBe(
+      "<p>plain <strong>bold</strong> text</p>",
+    );
+  });
+
+  it("still passes multi-block HTML through unchanged", () => {
+    expect(toRichTextHtml("<h2>Title</h2><p>body</p>")).toBe(
+      "<h2>Title</h2><p>body</p>",
+    );
+  });
+
+  // The subtler variant: a heading-led markdown body that MENTIONS a tag in its
+  // prose (e.g. a bug report about `<p>`) used to trip the tag test and pass
+  // through raw. A leading `##` marks it as markdown — convert it, tag and all.
+  it("converts heading-led markdown that only mentions a tag mid-body", () => {
+    const html = toRichTextHtml("## Title\n\nWrap it in `<p>` to break.");
+    expect(html).toBe(
+      "<h2>Title</h2><p>Wrap it in <code>&lt;p&gt;</code> to break.</p>",
+    );
+  });
 });

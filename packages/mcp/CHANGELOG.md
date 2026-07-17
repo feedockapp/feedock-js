@@ -1,5 +1,15 @@
 # @feedock/mcp
 
+## 0.4.1
+
+### Patch Changes
+
+- 1aaef53: Convert markdown that a caller wrapped in a single `<p>…</p>`. A body pre-wrapped
+  in one paragraph used to hit the HTML passthrough and land on the board as literal
+  `##` headings and backticked code. `toRichTextHtml` now peels off a lone outer
+  paragraph and converts the markdown inside. Genuine round-tripped HTML — inline
+  tags in one paragraph, or multi-block bodies — is still passed through untouched.
+
 ## 0.4.0
 
 ### Minor Changes
