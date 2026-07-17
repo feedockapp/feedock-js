@@ -8,18 +8,21 @@ import {
   MAX_ATTACHMENTS,
 } from "./submit-feedback-form";
 import { submitFormStyles } from "./submit-form-styles";
+import { useStyles } from "../../shared/lib/use-styles";
 import type { PublicFeedbackListItem } from "../../types";
 import { AttachmentList } from "./attachment-list";
 import { SimilarSuggestions } from "./similar-suggestions";
 
-type Props = {
+export type Props = {
   onSubmitted: (item: PublicFeedbackListItem) => void;
   onCancel: () => void;
 };
 
 /** Compose + submit a new public feedback item (visitor already verified). */
 export function SubmitForm({ onSubmitted, onCancel }: Props) {
+  // `theme` for the inline checkmark's stroke; `styles` from the shared memo.
   const { theme } = useFeedockContext();
+  const styles = useStyles(submitFormStyles);
   const {
     title,
     setTitle,
@@ -39,7 +42,6 @@ export function SubmitForm({ onSubmitted, onCancel }: Props) {
     onSubmit,
   } = useSubmitFeedback({ onSubmitted });
   const similar = useSimilarFeedback(title, body);
-  const styles = submitFormStyles(theme);
 
   return (
     <div style={styles.root(shown)}>
@@ -93,19 +95,7 @@ export function SubmitForm({ onSubmitted, onCancel }: Props) {
           aria-checked={notifyMe}
           aria-label="Email me when this ships"
           onClick={() => setNotifyMe(!notifyMe)}
-          style={{
-            width: 16,
-            height: 16,
-            flexShrink: 0,
-            padding: 0,
-            borderRadius: "50%",
-            cursor: "pointer",
-            border: `1px solid ${notifyMe ? theme.brand : theme.border}`,
-            background: notifyMe ? theme.brand : "transparent",
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
+          style={styles.notifyCheckbox(notifyMe)}
         >
           {notifyMe ? (
             <svg

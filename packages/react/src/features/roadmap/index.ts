@@ -2,4 +2,5 @@
 // Higher layers import only from this barrel.
 
 export { Roadmap } from "./roadmap";
+export { ROADMAP_COLUMN } from "./roadmap-columns";
 export { useRoadmap } from "./use-roadmap";

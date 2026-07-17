@@ -160,12 +160,18 @@ export function homeStyles(theme: ResolvedTheme) {
       color: secondaryText(theme),
       marginTop: 2,
     } as CSSProperties,
+    // `textTransform` carries the uppercase the old `formatShortDate` baked into
+    // the string — case is presentation, and upper-casing a localized month in
+    // JS misbehaves in some locales. (The hero's date needs no such rule: it
+    // sits inside `heroEyebrow`, which is already uppercase, and text-transform
+    // inherits.) See shared/lib/format.
     updateDate: {
       fontSize: 12,
       fontWeight: 400,
       color: secondaryText(theme),
       width: 48,
       flexShrink: 0,
+      textTransform: "uppercase",
     } as CSSProperties,
 
     /* ---- vote pill + status glyph ---- */

@@ -1,6 +1,7 @@
 // @ts-check
 import js from "@eslint/js";
 import stylistic from "@stylistic/eslint-plugin";
+import reactHooks from "eslint-plugin-react-hooks";
 import tseslint from "typescript-eslint";
 
 /** Flat ESLint config for the @feedock/react SDK package. */
@@ -25,6 +26,27 @@ export default tseslint.config(
         { blankLine: "always", prev: "function", next: "*" },
         { blankLine: "always", prev: "*", next: "function" },
       ],
+    },
+  },
+  {
+    // The hooks rules for the SDK. Registered by hand rather than via the
+    // plugin's `recommended` preset: on v7 that preset also turns on the React
+    // Compiler rule set, which is a much bigger conversation than these two.
+    //
+    // "warn", not "error", as a ratchet across the in-flight restructure: the
+    // rules should surface problems without hard-failing `lint` mid-rewrite.
+    // Note the baseline is already clean (0 warnings as of adding this), so
+    // once the restructure settles, promote both to "error" to lock that in.
+    //
+    // Scope, so nobody over-trusts this gate: these grade dep-array
+    // completeness and hook call ordering. They do NOT flag an effect that is
+    // unnecessary. The prop->state-sync and notify-the-parent effects (and
+    // their ref sentinels) are dep-complete and therefore invisible here —
+    // reviewing those stays a human job.
+    plugins: { "react-hooks": reactHooks },
+    rules: {
+      "react-hooks/rules-of-hooks": "warn",
+      "react-hooks/exhaustive-deps": "warn",
     },
   },
   {

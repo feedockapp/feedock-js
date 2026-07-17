@@ -2,7 +2,7 @@
 
 An MCP server that connects Claude, Cursor, or any MCP client to your
 [Feedock](https://feedock.com) project. The model reads your feedback board,
-roadmap, tasks, milestones, docs, and changelog through 30 tools, and writes back
+roadmap, tasks, milestones, docs, and changelog through 31 tools, and writes back
 to all of them — including deleting tasks and emailing the people who asked for a
 feature. Read the gates below before you connect it.
 

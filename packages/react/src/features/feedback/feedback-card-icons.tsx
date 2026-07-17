@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 
+import type { FeedbackStatus } from "../../types";
+
 /**
  * Card icons — the SAME Hugeicons the portal's FeedbackCard uses, inlined as SVG
  * (the SDK ships no icon dep). Per-status badge icon + the vote chevron + the
@@ -35,8 +37,11 @@ const CIRCLE =
   "M22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12Z";
 
 /** Status → glyph — one canonical set shared with the portal + dashboard badges
- *  (CircleDashed / Discover / Calendar03 / Contrast / CheckmarkBadge / Cancel). */
-const STATUS_GLYPH: Record<string, ReactNode> = {
+ *  (CircleDashed / Discover / Calendar03 / Contrast / CheckmarkBadge / Cancel).
+ *
+ *  Keyed by the `FeedbackStatus` union, so a new status won't compile until it
+ *  has a glyph, and a typo'd key is an error rather than a silent blank icon. */
+const STATUS_GLYPH: Record<FeedbackStatus, ReactNode> = {
   // CircleDashed — a dashed ring: "pending / not yet triaged".
   Open: (
     <path d="M11.9082 1.99805C11.0831 2.0062 10.2457 2.11736 9.41182 2.34079C8.57798 2.56421 7.79714 2.88668 7.07854 3.29214M1.99789 11.9082C2.01271 10.1907 2.47297 8.53244 3.29451 7.07923M6.92124 20.6143C5.48316 19.7666 4.25544 18.5606 3.38386 17.0807M12.0918 22.002C12.9169 21.9939 13.7544 21.8827 14.5882 21.6593C15.422 21.4359 16.2029 21.1134 16.9215 20.7079M22.0021 12.0919C21.9873 13.8094 21.527 15.4677 20.7055 16.9209M17.0788 3.38574C18.5169 4.23349 19.7446 5.43944 20.6162 6.91943" />
@@ -76,7 +81,13 @@ const STATUS_GLYPH: Record<string, ReactNode> = {
   ),
 };
 
-export function StatusIcon({ status }: { status: string }) {
+/**
+ * The `?? Open` fallback is unreachable per the types and stays on purpose: this
+ * SDK is versioned independently of the API it calls, so an API that grows a
+ * seventh status reaches an OLD installed bundle first. A neutral glyph beats an
+ * empty one.
+ */
+export function StatusIcon({ status }: { status: FeedbackStatus }) {
   return <Svg>{STATUS_GLYPH[status] ?? STATUS_GLYPH.Open}</Svg>;
 }
 
@@ -86,6 +97,25 @@ export function VoteArrowIcon() {
     <Svg size={18} sw={2}>
       <path d="M17.9998 15C17.9998 15 13.5809 9.00001 11.9998 9C10.4187 8.99999 5.99985 15 5.99985 15" />
     </Svg>
+  );
+}
+
+/**
+ * A small up-caret for the detail's vote pill. Hand-rolled rather than routed
+ * through `Svg` above: it strokes on the path, not the root, and the wrapper's
+ * defaults don't match — keeping it verbatim keeps the rendered SVG identical.
+ */
+export function VoteCaretIcon() {
+  return (
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M5 15l7-7 7 7"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }
 

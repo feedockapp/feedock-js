@@ -3,14 +3,14 @@
 import { useState } from "react";
 
 import { roadmapColumnColor, roadmapColumnLabel } from "./roadmap-columns";
-import type { RoadmapStyles } from "./roadmap-styles";
+import { roadmapStyles } from "./roadmap-styles";
+import { useStyles } from "../../shared/lib/use-styles";
 import type { PublicRoadmapColumnGroup } from "../../types";
 import { RoadmapCard } from "./roadmap-card";
 import { RoadmapSectionIcon } from "./roadmap-section-icon";
 
-type Props = {
+export type Props = {
   group: PublicRoadmapColumnGroup;
-  styles: RoadmapStyles;
   /** Open an item's detail view. */
   onSelect: (id: string) => void;
 };
@@ -19,7 +19,8 @@ type Props = {
 const COLLAPSED_COUNT = 4;
 
 /** One roadmap status section: a per-column glyph header + a capped timeline. */
-export function RoadmapColumn({ group, styles, onSelect }: Props) {
+export function RoadmapColumn({ group, onSelect }: Props) {
+  const styles = useStyles(roadmapStyles);
   const color = roadmapColumnColor(group.column);
   const [expanded, setExpanded] = useState(false);
   const [hover, setHover] = useState(false);
@@ -46,8 +47,7 @@ export function RoadmapColumn({ group, styles, onSelect }: Props) {
           column={group.column}
           color={color}
           isLast={i === shown.length - 1}
-          styles={styles}
-          onOpen={() => onSelect(item.id)}
+          onSelect={onSelect}
         />
       ))}
       {hasMore && !expanded ? (

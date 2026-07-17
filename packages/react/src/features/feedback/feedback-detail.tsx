@@ -4,31 +4,18 @@ import { useState } from "react";
 
 import { useFeedockContext, type VisitorIdentity } from "../../context";
 import { useFeedbackDetail } from "./use-feedback-detail";
+import { escapeHtml } from "./feedback-detail-escape";
 import { feedbackDetailStyles } from "./feedback-detail-styles";
-import { formatShortDate } from "../home/home-format";
+import { CommentRow } from "./feedback-comment-row";
+import { DATE_STYLE, formatDate } from "../../shared/lib/format";
+import { useStyles } from "../../shared/lib/use-styles";
 import { statusTone } from "../../theme";
-import type { PublicComment } from "../../types";
 import { Avatar } from "../../shared/ui/avatar";
-import { StatusIcon } from "./feedback-card-icons";
+import { StatusIcon, VoteCaretIcon } from "./feedback-card-icons";
 import { SafeHtml } from "../../shared/ui/safe-html";
 import { SpinnerBlock } from "../../shared/ui/spinner";
 
-/** A small up-caret for the vote pill. */
-function VoteCaret() {
-  return (
-    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path
-        d="M5 15l7-7 7 7"
-        stroke="currentColor"
-        strokeWidth="2.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-type Props = {
+export type Props = {
   id: string;
   onBack: () => void;
   /** Identity-gated write runner (shared with the board). */
@@ -38,38 +25,6 @@ type Props = {
   /** Hide the in-body back affordance when the host renders its own (widget). */
   hideBack?: boolean;
 };
-
-/** Escape a plain-text comment for the optimistic (pre-refetch) render. */
-function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-}
-
-/** One comment row: author (+ official badge) · time, then the body. */
-function CommentRow({
-  comment,
-  styles,
-}: {
-  comment: PublicComment;
-  styles: ReturnType<typeof feedbackDetailStyles>;
-}) {
-  return (
-    <div style={styles.comment}>
-      <div style={styles.commentMeta}>
-        <span style={styles.commentAuthor}>{comment.authorName}</span>
-        {comment.isOfficial ? (
-          <span style={styles.officialBadge}>TEAM</span>
-        ) : null}
-        <span style={styles.commentTime}>
-          {formatShortDate(comment.createdAt)}
-        </span>
-      </div>
-      <SafeHtml html={comment.body} style={styles.commentBody} />
-    </div>
-  );
-}
 
 /**
  * A single feedback item: back to the list, vote, the full body, its comments,
@@ -83,10 +38,10 @@ export function FeedbackDetail({
   onVoteCount,
   hideBack,
 }: Props) {
-  const { theme, client } = useFeedockContext();
+  const { client } = useFeedockContext();
   const { detail, loading, error, setVoteCount, prependComment } =
     useFeedbackDetail(id);
-  const styles = feedbackDetailStyles(theme);
+  const styles = useStyles(feedbackDetailStyles);
   const [comment, setComment] = useState("");
   const [posting, setPosting] = useState(false);
   const [commentError, setCommentError] = useState<string | null>(null);
@@ -159,14 +114,14 @@ export function FeedbackDetail({
               />
               <div style={styles.bylineText}>
                 <span style={styles.bylineName}>{detail.author.name}</span>
-                <span style={styles.bylineDate}>
-                  {formatShortDate(detail.createdAt)}
+                <span style={styles.bylineDate()}>
+                  {formatDate(detail.createdAt, DATE_STYLE.Short)}
                 </span>
               </div>
             </div>
           ) : (
-            <div style={{ ...styles.bylineDate, marginBottom: 16 }}>
-              {formatShortDate(detail.createdAt)}
+            <div style={styles.bylineDate(true)}>
+              {formatDate(detail.createdAt, DATE_STYLE.Short)}
             </div>
           )}
 
@@ -188,7 +143,7 @@ export function FeedbackDetail({
               style={styles.votePill(false)}
             >
               <span style={styles.voteCaret}>
-                <VoteCaret />
+                <VoteCaretIcon />
               </span>
               <span style={styles.voteNum}>{detail.voteCount}</span>
             </button>
@@ -217,14 +172,14 @@ export function FeedbackDetail({
               {posting ? "Posting…" : "Comment"}
             </button>
             {commentError ? (
-              <p style={{ fontSize: 12.5, color: "#D33A3F", margin: 0 }} role="alert">
+              <p style={styles.commentError} role="alert">
                 {commentError}
               </p>
             ) : null}
           </div>
 
           {detail.comments.map((c) => (
-            <CommentRow key={c.id} comment={c} styles={styles} />
+            <CommentRow key={c.id} comment={c} />
           ))}
         </>
       )}

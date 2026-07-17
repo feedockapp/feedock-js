@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-
-import { useFeedockContext } from "../../context";
 import { useRoadmap } from "./use-roadmap";
 import { roadmapStyles } from "./roadmap-styles";
+import { useDetailSelection } from "../../shared/hooks/use-detail-selection";
+import { useStyles } from "../../shared/lib/use-styles";
 import { RoadmapColumn } from "./roadmap-column";
 import { RoadmapDetail } from "./roadmap-detail";
 import { SpinnerBlock } from "../../shared/ui/spinner";
@@ -32,37 +31,16 @@ export function Roadmap({
   hideDetailBack,
   reloadKey = 0,
 }: RoadmapProps) {
-  const { theme } = useFeedockContext();
+  const styles = useStyles(roadmapStyles);
   const { columns, loading, error } = useRoadmap(reloadKey);
-  const styles = roadmapStyles(theme);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  // Open a deep-linked item only when the nonce advances (never on mount).
-  const lastOpenNonce = useRef(openItemNonce);
-  useEffect(() => {
-    if (openItemNonce !== lastOpenNonce.current) {
-      lastOpenNonce.current = openItemNonce;
-      if (openItemId) {
-        setSelectedId(openItemId);
-      }
-    }
-  }, [openItemNonce, openItemId]);
-  // Report detail open/close transitions to the host (once per change).
-  const detailWasOpen = useRef(false);
-  useEffect(() => {
-    const isOpen = selectedId !== null;
-    if (isOpen !== detailWasOpen.current) {
-      detailWasOpen.current = isOpen;
-      onDetailOpenChange?.(isOpen);
-    }
-  }, [selectedId, onDetailOpenChange]);
-  // Host bumped collapseNonce (e.g. a tab switch) — close any open detail.
-  const lastCollapse = useRef(collapseNonce);
-  useEffect(() => {
-    if (collapseNonce !== lastCollapse.current) {
-      lastCollapse.current = collapseNonce;
-      setSelectedId(null);
-    }
-  }, [collapseNonce]);
+  // The host protocol — deep-link open, collapse, and the open/close notify the
+  // widget's Back button depends on. See shared/hooks/use-detail-selection.
+  const { selectedId, select, close } = useDetailSelection({
+    openItemId,
+    openItemNonce,
+    collapseNonce,
+    onDetailOpenChange,
+  });
 
   // Spinner only on a first/empty load; a re-open refresh with columns already
   // on screen keeps them visible while it revalidates (no full-screen flash).
@@ -80,11 +58,7 @@ export function Roadmap({
   if (selected) {
     return (
       <div style={styles.root}>
-        <RoadmapDetail
-          item={selected}
-          onBack={() => setSelectedId(null)}
-          hideBack={hideDetailBack}
-        />
+        <RoadmapDetail item={selected} onBack={close} hideBack={hideDetailBack} />
       </div>
     );
   }
@@ -98,12 +72,7 @@ export function Roadmap({
   return (
     <div style={styles.root}>
       {visible.map((group) => (
-        <RoadmapColumn
-          key={group.column}
-          group={group}
-          styles={styles}
-          onSelect={setSelectedId}
-        />
+        <RoadmapColumn key={group.column} group={group} onSelect={select} />
       ))}
     </div>
   );

@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 
-import { useFeedockContext } from "../../context";
 import { submitFormStyles } from "./submit-form-styles";
+import { useStyles } from "../../shared/lib/use-styles";
 import type { SimilarFeedback } from "../../types";
 import { useFeedock } from "../../use-feedock";
 
@@ -13,9 +13,8 @@ type Props = {
 
 /** One "upvote instead?" suggestion row — upvotes an existing item in place. */
 export function SimilarSuggestionRow({ item }: Props) {
-  const { theme } = useFeedockContext();
   const { vote } = useFeedock();
-  const styles = submitFormStyles(theme);
+  const styles = useStyles(submitFormStyles);
   const [count, setCount] = useState(item.voteCount);
   const [voted, setVoted] = useState(false);
   const [busy, setBusy] = useState(false);

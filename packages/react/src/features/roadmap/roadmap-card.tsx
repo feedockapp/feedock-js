@@ -1,47 +1,40 @@
 "use client";
 
-import { useState } from "react";
+import { memo, useState } from "react";
 
-import type { RoadmapStyles } from "./roadmap-styles";
-import type { PublicRoadmapColumnGroup } from "../../types";
+import { ROADMAP_COLUMN } from "./roadmap-columns";
+import { roadmapStyles } from "./roadmap-styles";
+import { DATE_STYLE, formatDate } from "../../shared/lib/format";
+import { useStyles } from "../../shared/lib/use-styles";
+import type { PublicRoadmapColumnGroup, RoadmapColumn } from "../../types";
 import { Avatar } from "../../shared/ui/avatar";
 import { RoadmapMilestoneProgress } from "./roadmap-milestone-progress";
 import { SafeHtml } from "../../shared/ui/safe-html";
 
 type RoadmapItem = PublicRoadmapColumnGroup["items"][number];
 
-type Props = {
+export type Props = {
   item: RoadmapItem;
   /** The column this item is in (drives the compact Shipped layout). */
-  column: string;
+  column: RoadmapColumn;
   /** Timeline node color for this section. */
   color: string;
   /** Last item in the section — omit the connector line + divider below it. */
   isLast: boolean;
-  styles: RoadmapStyles;
-  /** Open this item's detail view. */
-  onOpen: () => void;
+  /**
+   * Open an item's detail. Takes the id (rather than a per-item `onOpen()`
+   * closure) so ONE stable callback serves every card — a fresh arrow per row
+   * would defeat the memo below.
+   */
+  onSelect: (id: string) => void;
 };
 
-/** A short "Jun 18" date (no year) for Shipped items. */
-function shippedDate(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-  });
-}
-
 /** One roadmap item on the timeline: a node + connector, then a tappable body. */
-export function RoadmapCard({
-  item,
-  column,
-  color,
-  isLast,
-  styles,
-  onOpen,
-}: Props) {
-  const shipped = column === "Shipped";
+function RoadmapCardImpl({ item, column, color, isLast, onSelect }: Props) {
+  const styles = useStyles(roadmapStyles);
+  const shipped = column === ROADMAP_COLUMN.Shipped;
   const [hover, setHover] = useState(false);
+
   return (
     <div style={styles.itemRow}>
       <div style={styles.rail}>
@@ -50,7 +43,7 @@ export function RoadmapCard({
       </div>
       <button
         type="button"
-        onClick={onOpen}
+        onClick={() => onSelect(item.id)}
         onMouseEnter={() => setHover(true)}
         onMouseLeave={() => setHover(false)}
         style={styles.itemContent(isLast)}
@@ -59,7 +52,9 @@ export function RoadmapCard({
           <span style={styles.itemTitle(hover)}>{item.title}</span>
           {shipped ? (
             item.shippedAt ? (
-              <span style={styles.date}>{shippedDate(item.shippedAt)}</span>
+              <span style={styles.date}>
+                {formatDate(item.shippedAt, DATE_STYLE.Short)}
+              </span>
             ) : null
           ) : (
             <span style={styles.pill}>
@@ -80,7 +75,7 @@ export function RoadmapCard({
           <SafeHtml html={item.description} style={styles.description} />
         ) : null}
         {!shipped && item.milestone ? (
-          <RoadmapMilestoneProgress milestone={item.milestone} styles={styles} />
+          <RoadmapMilestoneProgress milestone={item.milestone} />
         ) : null}
         {item.author ? (
           <span style={styles.authorRow}>
@@ -96,3 +91,12 @@ export function RoadmapCard({
     </div>
   );
 }
+
+/**
+ * Memoized, and every prop is now stable: `item` comes off the roadmap fetch
+ * (identity holds between refetches), `column`/`color`/`isLast` are primitives,
+ * and `onSelect` is the `select` callback from `useDetailSelection` (useCallback,
+ * empty deps). The style map used to arrive as a freshly-allocated prop on every
+ * parent render, which made memoizing this impossible; it reads its own now.
+ */
+export const RoadmapCard = memo(RoadmapCardImpl);

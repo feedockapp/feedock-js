@@ -1,16 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { memo, useState } from "react";
 
-import { useFeedockContext } from "../../context";
 import { feedbackListItemStyles } from "./feedback-list-item-styles";
+import { useStyles } from "../../shared/lib/use-styles";
 import { statusTone } from "../../theme";
 import type { PublicFeedbackListItem } from "../../types";
 import { Avatar } from "../../shared/ui/avatar";
 import { CommentIcon, StatusIcon, VoteArrowIcon } from "./feedback-card-icons";
 import { SafeHtml } from "../../shared/ui/safe-html";
 
-type Props = {
+export type Props = {
   item: PublicFeedbackListItem;
   onVote: (id: string) => void;
   /** Open the item's detail view (clicking the card body). */
@@ -22,22 +22,21 @@ type Props = {
  * excerpt + meta, with a full-height upvote column on the right split off by a
  * hairline.
  */
-export function FeedbackListItem({ item, onVote, onSelect }: Props) {
-  const { theme } = useFeedockContext();
+function FeedbackListItemImpl({ item, onVote, onSelect }: Props) {
+  const styles = useStyles(feedbackListItemStyles);
   const tone = statusTone(item.status);
   const [hover, setHover] = useState(false);
-  const styles = feedbackListItemStyles(theme, tone, hover);
 
   return (
     <div
-      style={styles.root}
+      style={styles.root(hover)}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
     >
       <button
         type="button"
         onClick={() => onSelect?.(item.id)}
-        style={{ ...styles.content, cursor: onSelect ? "pointer" : "default" }}
+        style={styles.content(Boolean(onSelect))}
       >
         <div style={styles.title}>{item.title}</div>
         <SafeHtml html={item.body} style={styles.body} />
@@ -48,7 +47,7 @@ export function FeedbackListItem({ item, onVote, onSelect }: Props) {
           </span>
           <span style={styles.statusMeta}>
             <span style={styles.metaDivider} aria-hidden />
-            <span style={styles.statusMetaIcon}>
+            <span style={styles.statusMetaIcon(tone.fg)}>
               <StatusIcon status={item.status} />
             </span>
             {tone.label}
@@ -87,3 +86,15 @@ export function FeedbackListItem({ item, onVote, onSelect }: Props) {
     </div>
   );
 }
+
+/**
+ * Memoized, and this is the one that earns its keep. The board re-renders on
+ * every SEARCH KEYSTROKE (and on each sort-pill hover); without this, all N
+ * cards re-rendered and each rebuilt its own style map on every character.
+ *
+ * Props are stable now: `item` comes off the list reducer, which reuses the
+ * object for every row a vote didn't touch; `onVote` is useCallback'd in
+ * use-feedback-board; `onSelect` is `select` from useDetailSelection. Hover is
+ * local state.
+ */
+export const FeedbackListItem = memo(FeedbackListItemImpl);

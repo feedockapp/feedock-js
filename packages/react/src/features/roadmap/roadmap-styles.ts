@@ -43,7 +43,6 @@ export function roadmapStyles(theme: ResolvedTheme) {
       fontWeight: 600,
       color: secondaryText(theme),
     } as CSSProperties,
-    empty: { fontSize: 12.5, color: secondaryText(theme) } as CSSProperties,
 
     /* ---- timeline item ---- */
     // Rail width == the 17px header glyph and gap == the header's, so the node
@@ -214,7 +213,55 @@ export function roadmapStyles(theme: ResolvedTheme) {
         width: `${percent}%`,
         background: theme.brand,
       }) as CSSProperties,
+
+    /* ---- detail view (one item, opened from the timeline) ---- */
+    // The byline name — heavier than a card's, it's the "who asked first" anchor.
+    detailAuthorName: {
+      fontSize: 14,
+      fontWeight: 500,
+      color: primaryText(theme),
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+      whiteSpace: "nowrap",
+    } as CSSProperties,
+    detailShipped: { fontSize: 12, color: secondaryText(theme) } as CSSProperties,
+    detailTitle: {
+      margin: "14px 0 0",
+      fontSize: 17,
+      fontWeight: 400,
+      lineHeight: 1.3,
+      color: primaryText(theme),
+    } as CSSProperties,
+    // The full body (the card clamps to 2 lines; here it runs). theme.text, not
+    // primaryText — the detail's prose is the one place we want full contrast.
+    detailDescription: {
+      marginTop: 10,
+      fontSize: 14,
+      lineHeight: 1.6,
+      color: theme.text,
+      wordBreak: "break-word",
+    } as CSSProperties,
+    // Footer rule: status (column) on the left, the "N people asked" rollup right.
+    detailFooter: {
+      marginTop: 16,
+      paddingTop: 12,
+      borderTop: `1px solid ${surfaceBorder(theme)}`,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 12,
+    } as CSSProperties,
+    detailStatus: {
+      display: "inline-flex",
+      alignItems: "center",
+      gap: 6,
+      fontSize: 12.5,
+      fontWeight: 600,
+      color: secondaryText(theme),
+    } as CSSProperties,
+    detailPeopleAsked: {
+      fontSize: 12.5,
+      color: secondaryText(theme),
+    } as CSSProperties,
   };
 }
-
-export type RoadmapStyles = ReturnType<typeof roadmapStyles>;

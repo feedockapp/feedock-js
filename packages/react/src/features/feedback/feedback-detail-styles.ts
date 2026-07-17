@@ -2,6 +2,9 @@ import type { CSSProperties } from "react";
 
 import type { ResolvedTheme } from "../../theme";
 
+/** Error red, shared with the board's error line. */
+const ERROR_FG = "#D33A3F";
+
 /** Inline-style factory for the feedback detail view (Shadow-DOM safe). */
 export function feedbackDetailStyles(theme: ResolvedTheme) {
   return {
@@ -36,11 +39,20 @@ export function feedbackDetailStyles(theme: ResolvedTheme) {
       color: theme.text,
       lineHeight: 1.2,
     } as CSSProperties,
-    bylineDate: {
-      fontSize: 12.5,
-      color: theme.muted,
-      marginTop: 2,
-    } as CSSProperties,
+    // `standalone`: no author to sit under, so the date leads the item alone and
+    // carries the byline's bottom spacing itself.
+    //
+    // `textTransform` carries the uppercase the old `formatShortDate` baked into
+    // the string — case is presentation, and upper-casing a localized month in
+    // JS misbehaves in some locales. See shared/lib/format.
+    bylineDate: (standalone = false) =>
+      ({
+        fontSize: 12.5,
+        color: theme.muted,
+        marginTop: 2,
+        textTransform: "uppercase",
+        ...(standalone ? { marginBottom: 16 } : {}),
+      }) as CSSProperties,
     title: {
       fontSize: 21,
       fontWeight: 600,
@@ -114,35 +126,8 @@ export function feedbackDetailStyles(theme: ResolvedTheme) {
       fontWeight: 600,
       letterSpacing: 0,
     } as CSSProperties,
-    comment: {
-      padding: "16px 0",
-      borderTop: `1px solid ${theme.border}`,
-    } as CSSProperties,
-    commentMeta: {
-      display: "flex",
-      alignItems: "center",
-      gap: 8,
-      fontSize: 12.5,
-      marginBottom: 4,
-    } as CSSProperties,
-    commentAuthor: { fontWeight: 600, color: theme.text } as CSSProperties,
-    // Soft brand-tinted chip (filled, not outlined) — the accent tracks the
-    // founder's brand color; color-mix keeps the fill a light tint of it.
-    officialBadge: {
-      fontSize: 10.5,
-      fontWeight: 600,
-      letterSpacing: 0.3,
-      color: theme.brand,
-      background: `color-mix(in srgb, ${theme.brand} 16%, transparent)`,
-      borderRadius: 6,
-      padding: "2px 7px",
-    } as CSSProperties,
-    commentTime: { fontSize: 12, color: theme.muted } as CSSProperties,
-    commentBody: {
-      fontSize: 13.5,
-      lineHeight: 1.5,
-      color: theme.text,
-    } as CSSProperties,
+    // The comment ROW's own keys live in feedback-comment-row-styles.ts — it
+    // reads them itself rather than being handed this map.
 
     composer: {
       display: "flex",
@@ -175,6 +160,11 @@ export function feedbackDetailStyles(theme: ResolvedTheme) {
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
       }) as CSSProperties,
+    commentError: {
+      fontSize: 12.5,
+      color: ERROR_FG,
+      margin: 0,
+    } as CSSProperties,
     muted: { fontSize: 13, color: theme.muted, padding: "16px 0" } as CSSProperties,
   };
 }

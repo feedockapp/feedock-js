@@ -13,6 +13,7 @@ export function submitFormStyles(theme: ResolvedTheme): {
   actions: CSSProperties;
   hiddenFileInput: CSSProperties;
   notifyRow: CSSProperties;
+  notifyCheckbox: (checked: boolean) => CSSProperties;
   error: CSSProperties;
   suggestions: CSSProperties;
   suggestionsTitle: CSSProperties;
@@ -88,6 +89,20 @@ export function submitFormStyles(theme: ResolvedTheme): {
       color: theme.muted,
       cursor: "pointer",
     },
+    // Round custom checkbox — fills with the brand color once ticked.
+    notifyCheckbox: (checked: boolean) => ({
+      width: 16,
+      height: 16,
+      flexShrink: 0,
+      padding: 0,
+      borderRadius: "50%",
+      cursor: "pointer",
+      border: `1px solid ${checked ? theme.brand : theme.border}`,
+      background: checked ? theme.brand : "transparent",
+      display: "inline-flex",
+      alignItems: "center",
+      justifyContent: "center",
+    }),
     error: { fontSize: 12, color: "#D33A3F" },
     suggestions: {
       border: `1px solid ${theme.border}`,

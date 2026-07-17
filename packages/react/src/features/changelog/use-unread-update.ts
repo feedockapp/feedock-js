@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useFeedockContext } from "../../context";
 import { readSeenUpdate, writeSeenUpdate } from "./seen";
@@ -45,5 +45,8 @@ export function useUnreadUpdate(): UnreadUpdate {
     }
   }, [latestId, slug]);
 
-  return { hasUnread: latestId !== null && latestId !== seenId, markSeen };
+  return useMemo(
+    () => ({ hasUnread: latestId !== null && latestId !== seenId, markSeen }),
+    [latestId, seenId, markSeen],
+  );
 }

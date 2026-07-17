@@ -6,8 +6,9 @@ import { useFeedockContext } from "../../context";
 import { useLatestUpdate } from "./use-latest-update";
 import { toExcerpt } from "./latest-update-text";
 import { latestUpdateStyles } from "./latest-update-styles";
+import { useStyles } from "../../shared/lib/use-styles";
 
-type Props = {
+export type Props = {
   /** Called when the user clicks the action (e.g. open the full "What's New"). */
   onOpen?: () => void;
   /** Max characters of the body excerpt (when there's no "why it matters" line). */
@@ -24,7 +25,10 @@ type Props = {
  * animation dependency). Long titles/bodies clamp to two lines.
  */
 export function LatestUpdate({ onOpen, excerptLength = 140 }: Props) {
+  // `theme` for the eyebrow glyph's brand fill; `styles` is a hook, so it has to
+  // resolve above the early return below.
   const { theme } = useFeedockContext();
+  const styles = useStyles(latestUpdateStyles);
   const { update, visible, gone, markSeen, dismiss } = useLatestUpdate();
   const [ctaHover, setCtaHover] = useState(false);
   const [closeHover, setCloseHover] = useState(false);
@@ -34,7 +38,6 @@ export function LatestUpdate({ onOpen, excerptLength = 140 }: Props) {
   }
 
   const excerpt = update.whyItMatters || toExcerpt(update.body, excerptLength);
-  const styles = latestUpdateStyles(theme);
 
   return (
     <section

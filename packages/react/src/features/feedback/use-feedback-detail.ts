@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useFeedockContext } from "../../context";
 import type { PublicComment, PublicFeedbackDetail } from "../../types";
@@ -35,11 +35,21 @@ export function useFeedbackDetail(id: string) {
     };
   }, [client, id]);
 
-  const setVoteCount = (voteCount: number) =>
-    setDetail((d) => (d ? { ...d, voteCount } : d));
+  // Both take the updater form, so neither closes over `detail` and both stay
+  // stable for the life of the hook.
+  const setVoteCount = useCallback(
+    (voteCount: number) => setDetail((d) => (d ? { ...d, voteCount } : d)),
+    [],
+  );
 
-  const prependComment = (comment: PublicComment) =>
-    setDetail((d) => (d ? { ...d, comments: [comment, ...d.comments] } : d));
+  const prependComment = useCallback(
+    (comment: PublicComment) =>
+      setDetail((d) => (d ? { ...d, comments: [comment, ...d.comments] } : d)),
+    [],
+  );
 
-  return { detail, loading, error, setVoteCount, prependComment };
+  return useMemo(
+    () => ({ detail, loading, error, setVoteCount, prependComment }),
+    [detail, loading, error, setVoteCount, prependComment],
+  );
 }

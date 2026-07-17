@@ -10,6 +10,7 @@ import {
   type UseSubmitFeedback,
 } from "./use-submit-feedback";
 import { composerStyles } from "./composer-styles";
+import { useStyles } from "../../shared/lib/use-styles";
 import {
   ACCEPT_ATTACHMENT_TYPES,
   MAX_ATTACHMENTS,
@@ -19,7 +20,7 @@ import { AttachmentList } from "./attachment-list";
 import { IdentityPrompt } from "./identity-prompt";
 import { SimilarSuggestions } from "./similar-suggestions";
 
-type Props = {
+export type Props = {
   /** Called with the new item after a successful post. */
   onPosted: (item: PublicFeedbackListItem) => void;
 };
@@ -44,7 +45,9 @@ function ComposerForm({
   /** Post the draft — gates on verification first (handled by the parent). */
   onPost: () => void;
 }) {
+  // `theme` for the inline icon fills; `styles` comes from the shared memo.
   const { theme } = useFeedockContext();
+  const styles = useStyles(composerStyles);
   const {
     title,
     setTitle,
@@ -61,7 +64,6 @@ function ComposerForm({
     error,
   } = form;
   const similar = useSimilarFeedback(title, body);
-  const styles = composerStyles(theme);
 
   return (
     <div style={styles.root}>
@@ -89,19 +91,7 @@ function ComposerForm({
             aria-checked={notifyMe}
             aria-label="Email me when this ships"
             onClick={() => setNotifyMe(!notifyMe)}
-            style={{
-              width: 16,
-              height: 16,
-              flexShrink: 0,
-              padding: 0,
-              borderRadius: "50%",
-              cursor: "pointer",
-              border: `1px solid ${notifyMe ? theme.brand : theme.border}`,
-              background: notifyMe ? theme.brand : "transparent",
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
+            style={styles.notifyCheckbox(notifyMe)}
           >
             {notifyMe ? (
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={theme.onBrand} strokeWidth={3} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -121,7 +111,7 @@ function ComposerForm({
           accept={ACCEPT_ATTACHMENT_TYPES}
           multiple
           onChange={(e) => addFiles(e.target.files)}
-          style={{ display: "none" }}
+          style={styles.hiddenFileInput}
           tabIndex={-1}
           aria-hidden
         />
@@ -156,7 +146,7 @@ function ComposerForm({
  * Drop it into a panel that fills its height.
  */
 export function Composer({ onPosted }: Props) {
-  const { theme } = useFeedockContext();
+  const styles = useStyles(composerStyles);
   const { isVerified, ensureIdentity } = useFeedock();
   const form = useSubmitFeedback({ onSubmitted: onPosted });
   const [gateOpen, setGateOpen] = useState(false);
@@ -190,7 +180,7 @@ export function Composer({ onPosted }: Props) {
 
   if (gateOpen && !isVerified) {
     return (
-      <div style={composerStyles(theme).gateWrap}>
+      <div style={styles.gateWrap}>
         <IdentityPrompt
           action="post"
           onVerified={() => {

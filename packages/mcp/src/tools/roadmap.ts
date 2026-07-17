@@ -19,7 +19,9 @@ import { z } from "zod";
 import {
   CREATE_ROADMAP_ITEM_MUTATION,
   MOVE_ROADMAP_ITEM_MUTATION,
+  ROADMAP_ITEM_QUERY,
   ROADMAP_ITEMS_QUERY,
+  UPDATE_ROADMAP_ITEM_MUTATION,
 } from "../client/operations.js";
 import { toApiToolError, toToolError } from "../lib/errors.js";
 import { toRichTextHtml } from "../lib/markdown.js";
@@ -115,6 +117,35 @@ const CreateRoadmapItemToolInput = {
   milestoneId: uuid
     .optional()
     .describe("down-link to a planning milestone (validated to this project)"),
+} as const;
+
+const UpdateRoadmapItemToolInput = {
+  id: uuid.describe("the roadmap item to edit"),
+  title: z.string().min(1).max(200).optional().describe("replace the title"),
+  description: z
+    .string()
+    .max(10_000)
+    .optional()
+    .describe("replace the description — markdown, plain text, or rich-text HTML"),
+  visibility: VisibilityEnum.optional().describe(
+    "PUBLIC shows on the public roadmap",
+  ),
+  targetWindow: z
+    .string()
+    .max(80)
+    .optional()
+    .describe('loose window e.g. "Q3" — never a hard date'),
+  milestoneId: uuid
+    .optional()
+    .describe("re-link to a planning milestone (validated to this project)"),
+  // M-27: same reasoning as create — turning an item PUBLIC, or editing the copy
+  // of one that already is, writes to the public roadmap. The lane is deliberately
+  // NOT editable here: moving to Shipped emails requesters, and that gate lives in
+  // feedock_move_roadmap_item where it can't be reached by an incidental edit.
+  confirm: z
+    .boolean()
+    .optional()
+    .describe("required (true) when the item is or becomes PUBLIC"),
 } as const;
 
 const MoveRoadmapItemToolInput = {
@@ -227,6 +258,73 @@ export function registerRoadmapTools(
           createRoadmapItem: RoadmapItemRow;
         }>(CREATE_ROADMAP_ITEM_MUTATION, { input });
         const out = { item: mapRoadmapItem(data.createRoadmapItem) };
+        return {
+          content: [{ type: "text", text: JSON.stringify(out) }],
+          structuredContent: out,
+        };
+      } catch (err) {
+        return toApiToolError(err);
+      }
+    },
+  );
+
+  server.registerTool(
+    "feedock_update_roadmap_item",
+    {
+      title: "Update a roadmap item",
+      description:
+        "Edit a roadmap item's title, description, visibility, target window, " +
+        "or linked milestone. Only the fields you pass change. Markdown in the " +
+        "description is converted to rich text. Does NOT move lanes — use " +
+        "feedock_move_roadmap_item, whose Shipped gate emails requesters. " +
+        "Owner/Admin only. Editing an item that is (or becomes) PUBLIC writes to " +
+        "the public roadmap, so it needs confirm:true. Returns the updated item.",
+      inputSchema: UpdateRoadmapItemToolInput,
+      outputSchema: RoadmapItemOutput,
+      annotations: {
+        readOnlyHint: false,
+        destructiveHint: false,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
+    },
+    async (args): Promise<CallToolResult> => {
+      try {
+        const { confirm, ...rest } = args;
+
+        // The gate has to know whether this item is ALREADY public — an edit to a
+        // live public item is a public write even when the call says nothing about
+        // visibility. Read it rather than assume; guessing from the args alone
+        // would leave the common case (editing published copy) ungated.
+        const current = await client.request<{ roadmapItem: RoadmapItemRow }>(
+          ROADMAP_ITEM_QUERY,
+          { id: rest.id },
+        );
+        const becomesPublic = rest.visibility === VisibilityEnum.enum.PUBLIC;
+        const staysPublic =
+          rest.visibility === undefined &&
+          current.roadmapItem.visibility === VisibilityEnum.enum.PUBLIC;
+
+        if ((becomesPublic || staysPublic) && confirm !== true) {
+          return toToolError(
+            becomesPublic
+              ? "Making this roadmap item PUBLIC posts it to the public roadmap. " +
+                  "Re-check the title/description and retry with confirm:true."
+              : "This roadmap item is PUBLIC, so the edit changes the public " +
+                  "roadmap. Re-check the copy and retry with confirm:true.",
+          );
+        }
+
+        const input = {
+          ...rest,
+          ...(rest.description !== undefined
+            ? { description: toRichTextHtml(rest.description) }
+            : {}),
+        };
+        const data = await client.request<{
+          updateRoadmapItem: RoadmapItemRow;
+        }>(UPDATE_ROADMAP_ITEM_MUTATION, { input });
+        const out = { item: mapRoadmapItem(data.updateRoadmapItem) };
         return {
           content: [{ type: "text", text: JSON.stringify(out) }],
           structuredContent: out,

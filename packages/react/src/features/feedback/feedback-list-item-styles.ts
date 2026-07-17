@@ -8,61 +8,43 @@ import {
   surfaceBorder,
 } from "../../shared/lib/surface";
 
-type StatusTone = {
-  fg: string;
-  bg: string;
-};
-
 /**
  * Inline-style map for one SDK feedback card: a padded content column (title +
  * excerpt over a single meta row — comment count · divider · status) beside a
  * full-height vote column split off by a hairline. The status is inline text
  * with only its glyph colored (no pill).
  */
-export function feedbackListItemStyles(
-  theme: ResolvedTheme,
-  tone: StatusTone,
-  hover: boolean,
-): {
-  root: CSSProperties;
-  content: CSSProperties;
-  title: CSSProperties;
-  body: CSSProperties;
-  meta: CSSProperties;
-  metaItem: CSSProperties;
-  metaDivider: CSSProperties;
-  statusMeta: CSSProperties;
-  statusMetaIcon: CSSProperties;
-  metaShrink: CSSProperties;
-  boardName: CSSProperties;
-  authorName: CSSProperties;
-  voteColumn: CSSProperties;
-  voteArrow: CSSProperties;
-  voteCount: CSSProperties;
-} {
+export function feedbackListItemStyles(theme: ResolvedTheme) {
   const dark = theme.mode === "dark";
+  // Deliberately NOT surfaceBorder(): the vote column's split is a touch
+  // stronger than the card's own hairline on dark (0.08 vs 0.06).
   const hairline = dark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)";
   return {
-    root: {
-      display: "flex",
-      alignItems: "stretch",
-      overflow: "hidden",
-      borderRadius: 16,
-      border: `1px solid ${surfaceBorder(theme, hover)}`,
-      background: surfaceBg(theme),
-      transition: "border-color 0.12s ease",
-    },
-    content: {
-      flex: 1,
-      minWidth: 0,
-      display: "block",
-      padding: 14,
-      textAlign: "left",
-      border: "none",
-      background: "transparent",
-      cursor: "pointer",
-      fontFamily: "inherit",
-    },
+    // Border brightens on hover (the shared hover affordance).
+    root: (hover = false) =>
+      ({
+        display: "flex",
+        alignItems: "stretch",
+        overflow: "hidden",
+        borderRadius: 16,
+        border: `1px solid ${surfaceBorder(theme, hover)}`,
+        background: surfaceBg(theme),
+        transition: "border-color 0.12s ease",
+      }) as CSSProperties,
+    // The card body is a button (opens the detail) — only a pointer when it
+    // actually opens something.
+    content: (clickable = false) =>
+      ({
+        flex: 1,
+        minWidth: 0,
+        display: "block",
+        padding: 14,
+        textAlign: "left",
+        border: "none",
+        background: "transparent",
+        cursor: clickable ? "pointer" : "default",
+        fontFamily: "inherit",
+      }) as CSSProperties,
     title: {
       fontSize: 14,
       fontWeight: 400,
@@ -70,7 +52,7 @@ export function feedbackListItemStyles(
       whiteSpace: "nowrap",
       overflow: "hidden",
       textOverflow: "ellipsis",
-    },
+    } as CSSProperties,
     body: {
       marginTop: 3,
       fontSize: 13,
@@ -80,7 +62,7 @@ export function feedbackListItemStyles(
       WebkitLineClamp: 2,
       WebkitBoxOrient: "vertical",
       overflow: "hidden",
-    },
+    } as CSSProperties,
     // One line: comments + status stay fixed; the board + author names shrink
     // (truncate) so everything fits without wrapping.
     meta: {
@@ -93,13 +75,13 @@ export function feedbackListItemStyles(
       overflow: "hidden",
       fontSize: 12,
       color: secondaryText(theme),
-    },
+    } as CSSProperties,
     metaItem: {
       display: "inline-flex",
       alignItems: "center",
       gap: 4,
       flexShrink: 0,
-    },
+    } as CSSProperties,
     // The status half of the meta row: [divider][colored glyph][label]. Grouped
     // so the label stays with its divider; fixed-width (never shrinks).
     statusMeta: {
@@ -108,14 +90,16 @@ export function feedbackListItemStyles(
       gap: 6,
       whiteSpace: "nowrap",
       flexShrink: 0,
-    },
+    } as CSSProperties,
     metaDivider: {
       width: 1,
       height: 11,
       flexShrink: 0,
       background: dark ? "rgba(255,255,255,0.18)" : "rgba(0,0,0,0.16)",
-    },
-    statusMetaIcon: { display: "inline-flex", color: tone.fg },
+    } as CSSProperties,
+    // Only the glyph carries the status tone (`statusTone(status).fg`).
+    statusMetaIcon: (fg: string) =>
+      ({ display: "inline-flex", color: fg }) as CSSProperties,
     // The board + author groups shrink (their names truncate) so the row stays
     // on one line. minWidth:0 lets the child text ellipsize below its content.
     metaShrink: {
@@ -124,19 +108,19 @@ export function feedbackListItemStyles(
       gap: 6,
       minWidth: 0,
       flexShrink: 1,
-    },
+    } as CSSProperties,
     boardName: {
       minWidth: 0,
       overflow: "hidden",
       textOverflow: "ellipsis",
       whiteSpace: "nowrap",
-    },
+    } as CSSProperties,
     authorName: {
       minWidth: 0,
       overflow: "hidden",
       textOverflow: "ellipsis",
       whiteSpace: "nowrap",
-    },
+    } as CSSProperties,
     voteColumn: {
       display: "flex",
       flexDirection: "column",
@@ -152,8 +136,14 @@ export function feedbackListItemStyles(
       color: theme.text,
       cursor: "pointer",
       fontFamily: "inherit",
-    },
-    voteArrow: { color: theme.brand, display: "flex" },
-    voteCount: { fontSize: 14, fontWeight: 400, color: primaryText(theme) },
+    } as CSSProperties,
+    voteArrow: { color: theme.brand, display: "flex" } as CSSProperties,
+    voteCount: {
+      fontSize: 14,
+      fontWeight: 400,
+      color: primaryText(theme),
+    } as CSSProperties,
   };
 }
+
+export type FeedbackListItemStyles = ReturnType<typeof feedbackListItemStyles>;

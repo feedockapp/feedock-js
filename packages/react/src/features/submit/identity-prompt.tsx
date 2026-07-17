@@ -1,8 +1,9 @@
 "use client";
 
-import { useFeedockContext, type VisitorIdentity } from "../../context";
+import type { VisitorIdentity } from "../../context";
 import { useIdentityPrompt } from "./use-identity-prompt";
 import { identityPromptStyles } from "./identity-prompt-styles";
+import { useStyles } from "../../shared/lib/use-styles";
 
 type Props = {
   /** What the visitor is trying to do, e.g. "vote" or "post". */
@@ -20,8 +21,7 @@ type Props = {
  * field is offered as a fallback.
  */
 export function IdentityPrompt({ action, onVerified, onCancel }: Props) {
-  const { theme } = useFeedockContext();
-  const styles = identityPromptStyles(theme);
+  const styles = useStyles(identityPromptStyles);
   const {
     email,
     setEmail,

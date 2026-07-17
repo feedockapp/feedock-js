@@ -1,8 +1,17 @@
 "use client";
 
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
 import { roadmapColumnColor } from "./roadmap-columns";
+import type { RoadmapColumn } from "../../types";
+
+export type Props = {
+  /** The roadmap column whose glyph to draw (unknown → the Later calendar). */
+  column: RoadmapColumn;
+};
+
+/** Static: the hue is the `stroke` prop's job, so this never reads the theme. */
+const GLYPH: CSSProperties = { display: "block", flexShrink: 0 };
 
 /**
  * Per-column roadmap header glyph — the SAME Hugeicons the public Portal uses
@@ -10,8 +19,12 @@ import { roadmapColumnColor } from "./roadmap-columns";
  * inlined here so the dependency-free SDK/widget stays self-contained (it can't
  * pull in @hugeicons). Colored by the column via roadmapColumnColor; stroke
  * weight (2) matches the portal's HugeiconsIcon override.
+ *
+ * Keyed by the union, so adding a column to `RoadmapColumn` won't compile until
+ * it has a glyph. The `?? Later` fallback below covers the other direction: an
+ * API that ships a new column to an already-installed SDK bundle.
  */
-const COLUMN_PATHS: Record<string, ReactNode> = {
+const COLUMN_PATHS: Record<RoadmapColumn, ReactNode> = {
   // Fire
   Now: (
     <path d="M13.8561 22C26.0783 19 19.2338 7 10.9227 2C9.9453 5.5 8.47838 6.5 5.54497 10C1.66121 14.6339 3.5895 20 8.96719 22C8.1524 21 6.04958 18.9008 7.5 16C8 15 9 14 8.5 12C9.47778 12.5 11.5 13 12 15.5C12.8148 14.5 13.6604 12.4 12.8783 10C19 14.5 16.5 19 13.8561 22Z" />
@@ -40,7 +53,7 @@ const COLUMN_PATHS: Record<string, ReactNode> = {
   ),
 };
 
-export function RoadmapSectionIcon({ column }: { column: string }) {
+export function RoadmapSectionIcon({ column }: Props) {
   const color = roadmapColumnColor(column);
   return (
     <svg
@@ -52,7 +65,7 @@ export function RoadmapSectionIcon({ column }: { column: string }) {
       strokeWidth={2}
       strokeLinecap="round"
       strokeLinejoin="round"
-      style={{ display: "block", flexShrink: 0 }}
+      style={GLYPH}
       aria-hidden
     >
       {COLUMN_PATHS[column] ?? COLUMN_PATHS.Later}

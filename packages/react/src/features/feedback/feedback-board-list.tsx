@@ -1,11 +1,12 @@
 "use client";
 
-import { useFeedockContext } from "../../context";
+import { feedbackBoardListStyles } from "./feedback-board-list-styles";
+import { useStyles } from "../../shared/lib/use-styles";
 import type { PublicFeedbackListItem } from "../../types";
 import { FeedbackListItem } from "./feedback-list-item";
 import { Spinner, SpinnerBlock } from "../../shared/ui/spinner";
 
-type Props = {
+export type Props = {
   items: PublicFeedbackListItem[];
   loading: boolean;
   onVote: (id: string) => void;
@@ -19,38 +20,26 @@ type Props = {
  * switching Top/New never flashes an empty "Loading…" state.
  */
 export function FeedbackBoardList({ items, loading, onVote, onSelect }: Props) {
-  const { theme } = useFeedockContext();
+  const styles = useStyles(feedbackBoardListStyles);
 
   if (loading && items.length === 0) {
     return <SpinnerBlock />;
   }
 
   if (items.length === 0) {
-    return (
-      <div style={{ fontSize: 13, color: theme.muted, padding: "16px 0" }}>
-        No feedback yet. Be the first to post.
-      </div>
-    );
+    return <div style={styles.empty}>No feedback yet. Be the first to post.</div>;
   }
 
   return (
-    <div style={{ position: "relative" }}>
+    <div style={styles.root}>
       {/* Revalidating with data on screen (e.g. a re-open refresh): keep the
           list visible but dimmed, with a small spinner so the refresh reads. */}
       {loading ? (
-        <div style={{ position: "absolute", top: 0, right: 0, zIndex: 1 }}>
+        <div style={styles.spinner}>
           <Spinner size={16} />
         </div>
       ) : null}
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 8,
-          opacity: loading ? 0.55 : 1,
-          transition: "opacity 0.15s ease",
-        }}
-      >
+      <div style={styles.list(loading)}>
         {items.map((item) => (
           <FeedbackListItem
             key={item.id}

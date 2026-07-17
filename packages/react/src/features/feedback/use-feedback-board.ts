@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useReducer, useState } from "react";
+import { useCallback, useEffect, useMemo, useReducer, useState } from "react";
 
 import { useFeedockContext, type VisitorIdentity } from "../../context";
 import type { PublicFeedbackListItem } from "../../types";
@@ -149,9 +149,17 @@ export function useFeedbackBoard(
     [identity, ensureIdentity],
   );
 
-  const onVote = (id: string) =>
-    guarded("vote", (id2) => doVote(id, id2.token));
-  const onNewPost = () => guarded("post", () => setComposerOpen(true));
+  // Stable, so the list rows below can be memoized: every card gets this one
+  // `onVote` and calls it with its own id (no per-row closure).
+  const onVote = useCallback(
+    (id: string) => guarded("vote", (identity) => doVote(id, identity.token)),
+    [guarded, doVote],
+  );
+
+  const onNewPost = useCallback(
+    () => guarded("post", () => setComposerOpen(true)),
+    [guarded],
+  );
 
   const applyVoteCount = useCallback(
     (id: string, voteCount: number) =>
@@ -159,25 +167,40 @@ export function useFeedbackBoard(
     [],
   );
 
-  const onSubmitted = (item: PublicFeedbackListItem) => {
+  const onSubmitted = useCallback((item: PublicFeedbackListItem) => {
     dispatchList({ type: "submitted", item });
     setComposerOpen(false);
-  };
+  }, []);
 
-  return {
-    items: list.items,
-    sort,
-    setSort,
-    loading: list.loading,
-    error: list.error,
-    composerOpen,
-    setComposerOpen,
-    gate,
-    setGate,
-    onVote,
-    onNewPost,
-    onSubmitted,
-    guarded,
-    applyVoteCount,
-  };
+  return useMemo(
+    () => ({
+      items: list.items,
+      sort,
+      setSort,
+      loading: list.loading,
+      error: list.error,
+      composerOpen,
+      setComposerOpen,
+      gate,
+      setGate,
+      onVote,
+      onNewPost,
+      onSubmitted,
+      guarded,
+      applyVoteCount,
+    }),
+    [
+      list.items,
+      sort,
+      list.loading,
+      list.error,
+      composerOpen,
+      gate,
+      onVote,
+      onNewPost,
+      onSubmitted,
+      guarded,
+      applyVoteCount,
+    ],
+  );
 }

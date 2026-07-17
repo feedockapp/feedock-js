@@ -1,10 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { useFeedockContext } from "../../context";
 import { readSeenUpdate, writeSeenUpdate } from "./seen";
 import type { PublicUpdate } from "../../types";
+
+/** Matches the toast's CSS fade-out, so `gone` flips after it has left. */
+const FADE_OUT_MS = 260;
 
 type UseLatestUpdate = {
   /** The newest published update to show, or null when there's nothing new. */
@@ -54,17 +57,22 @@ export function useLatestUpdate(): UseLatestUpdate {
     };
   }, [client, slug]);
 
-  function markSeen() {
+  const markSeen = useCallback(() => {
     if (update) {
       writeSeenUpdate(slug, update.id);
     }
-  }
+  }, [update, slug]);
 
-  function dismiss() {
+  // The timeout outlives the fade so `gone` flips only once the toast has
+  // finished animating out; unmounting first just drops a harmless no-op set.
+  const dismiss = useCallback(() => {
     setVisible(false);
     markSeen();
-    window.setTimeout(() => setGone(true), 260);
-  }
+    window.setTimeout(() => setGone(true), FADE_OUT_MS);
+  }, [markSeen]);
 
-  return { update, visible, gone, markSeen, dismiss };
+  return useMemo(
+    () => ({ update, visible, gone, markSeen, dismiss }),
+    [update, visible, gone, markSeen, dismiss],
+  );
 }

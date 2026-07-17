@@ -66,6 +66,17 @@ export class FeedockClient {
   /** Config is fetched by the provider AND components — share one request. */
   private configPromise: Promise<PublicProjectConfig> | null = null;
 
+  /**
+   * Reads still in flight, keyed by path. Callers that ask for the same thing
+   * before the first answer lands share that one request.
+   *
+   * Distinct from `configPromise`, which caches FOREVER: this only spans the
+   * flight. Updates must stay refetchable — the widget bumps `reloadKey` on
+   * every open exactly so a re-open shows fresh data, and a permanent cache
+   * would quietly defeat that.
+   */
+  private inFlight = new Map<string, Promise<unknown>>();
+
   constructor(
     private readonly apiBase: string,
     private readonly slug: string,
@@ -146,9 +157,29 @@ export class FeedockClient {
   }
 
   listUpdates(cursor?: string): Promise<PublicPage<PublicUpdate>> {
-    return this.request(
+    // Deduped: three separate things want the update list — the Changelog tab,
+    // the "what's new" toast, and the launcher's unread dot — and the widget
+    // keeps them all mounted, so opening it fired the same GET three times.
+    return this.sharedRead(
       `/updates${cursor ? `?cursor=${encodeURIComponent(cursor)}` : ""}`,
     );
+  }
+
+  /**
+   * A GET whose in-flight promise is shared by identical concurrent callers.
+   * Reads only, and only while pending: once it settles the entry is dropped,
+   * so the next call is a real request and nothing goes stale.
+   */
+  private sharedRead<T>(path: string): Promise<T> {
+    const pending = this.inFlight.get(path) as Promise<T> | undefined;
+    if (pending) {
+      return pending;
+    }
+    const shared = this.request<T>(path).finally(() => {
+      this.inFlight.delete(path);
+    });
+    this.inFlight.set(path, shared);
+    return shared;
   }
 
   /**

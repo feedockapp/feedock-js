@@ -1,7 +1,7 @@
 "use client";
 
-import { useFeedockContext } from "../../context";
 import { submitFormStyles } from "./submit-form-styles";
+import { useStyles } from "../../shared/lib/use-styles";
 import type { SimilarFeedback } from "../../types";
 import { SimilarSuggestionRow } from "./similar-suggestion-row";
 
@@ -16,8 +16,7 @@ type Props = {
  * composer stays clean and the visitor can always post their own item.
  */
 export function SimilarSuggestions({ matches }: Props) {
-  const { theme } = useFeedockContext();
-  const styles = submitFormStyles(theme);
+  const styles = useStyles(submitFormStyles);
   if (matches.length === 0) {
     return null;
   }

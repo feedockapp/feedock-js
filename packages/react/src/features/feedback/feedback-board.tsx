@@ -1,21 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 
-import { useFeedockContext } from "../../context";
+import { useDebouncedValue } from "./use-debounced-value";
 import { useFeedbackBoard } from "./use-feedback-board";
-import {
-  feedbackFillSectionStyle,
-  feedbackHeaderSectionStyle,
-  feedbackListScrollStyle,
-  feedbackNewPostStyle,
-  feedbackRootStyle,
-  feedbackSearchIconStyle,
-  feedbackSearchInputStyle,
-  feedbackSearchWrapStyle,
-  feedbackSortGroupStyle,
-  feedbackSortItemStyle,
-} from "./feedback-board-styles";
+import { feedbackBoardStyles } from "./feedback-board-styles";
+import { useDetailSelection } from "../../shared/hooks/use-detail-selection";
+import { useStyles } from "../../shared/lib/use-styles";
 import { IdentityPrompt, SubmitForm } from "../submit";
 import { ClockIcon, SearchIcon, TrendingIcon } from "./feedback-board-icons";
 import { FeedbackBoardList } from "./feedback-board-list";
@@ -48,6 +39,9 @@ export interface FeedbackBoardProps {
   reloadKey?: number;
 }
 
+/** Keystrokes settle for this long before the search hits the server. */
+const SEARCH_DEBOUNCE_MS = 300;
+
 /**
  * Embeddable feedback board: a searchable list of public feedback that
  * account-less visitors can upvote, open (a detail view with comments), and
@@ -65,47 +59,22 @@ export function FeedbackBoard({
   hideDetailBack,
   reloadKey = 0,
 }: FeedbackBoardProps) {
-  const { theme } = useFeedockContext();
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  // Open a deep-linked item only when the nonce advances past what we saw at
-  // mount — never on mount itself (a post-triggered remount must not re-open).
-  const lastOpenNonce = useRef(openItemNonce);
-  useEffect(() => {
-    if (openItemNonce !== lastOpenNonce.current) {
-      lastOpenNonce.current = openItemNonce;
-      if (openItemId) {
-        setSelectedId(openItemId);
-      }
-    }
-  }, [openItemNonce, openItemId]);
-  // Report detail open/close transitions to the host (once per change).
-  const detailWasOpen = useRef(false);
-  useEffect(() => {
-    const isOpen = selectedId !== null;
-    if (isOpen !== detailWasOpen.current) {
-      detailWasOpen.current = isOpen;
-      onDetailOpenChange?.(isOpen);
-    }
-  }, [selectedId, onDetailOpenChange]);
-  // Host bumped collapseNonce (e.g. a tab switch) — close any open detail.
-  const lastCollapse = useRef(collapseNonce);
-  useEffect(() => {
-    if (collapseNonce !== lastCollapse.current) {
-      lastCollapse.current = collapseNonce;
-      setSelectedId(null);
-    }
-  }, [collapseNonce]);
+  const styles = useStyles(feedbackBoardStyles);
+  // The host protocol — deep-link open, collapse, and the open/close notify the
+  // widget's Back button depends on. See shared/hooks/use-detail-selection.
+  const { selectedId, select, close } = useDetailSelection({
+    openItemId,
+    openItemNonce,
+    collapseNonce,
+    onDetailOpenChange,
+  });
   const [search, setSearch] = useState("");
   // Header interaction state (hover on search + sort pills, search focus).
   const [searchHover, setSearchHover] = useState(false);
   const [searchFocus, setSearchFocus] = useState(false);
   const [hoveredSort, setHoveredSort] = useState<"top" | "new" | null>(null);
-  // Debounce the search so the server isn't queried on every keystroke.
-  const [debounced, setDebounced] = useState("");
-  useEffect(() => {
-    const t = setTimeout(() => setDebounced(search), 300);
-    return () => clearTimeout(t);
-  }, [search]);
+  // Don't query the server on every keystroke.
+  const debounced = useDebouncedValue(search, SEARCH_DEBOUNCE_MS);
 
   const {
     items,
@@ -125,16 +94,9 @@ export function FeedbackBoard({
   } = useFeedbackBoard(defaultSort, debounced, reloadKey);
 
   const headerRow = (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        gap: 8,
-        flexWrap: "wrap",
-      }}
-    >
-      <div style={feedbackSearchWrapStyle()}>
-        <span style={feedbackSearchIconStyle(theme)}>
+    <div style={styles.headerRow}>
+      <div style={styles.searchWrap}>
+        <span style={styles.searchIcon}>
           <SearchIcon />
         </span>
         <input
@@ -147,18 +109,14 @@ export function FeedbackBoard({
           onBlur={() => setSearchFocus(false)}
           placeholder="Search feedback"
           aria-label="Search feedback"
-          style={feedbackSearchInputStyle(theme, searchHover, searchFocus)}
+          style={styles.searchInput(searchHover, searchFocus)}
         />
       </div>
 
-      <div style={feedbackSortGroupStyle(theme)}>
+      <div style={styles.sortGroup}>
         <button
           type="button"
-          style={feedbackSortItemStyle(
-            theme,
-            sort === "top",
-            hoveredSort === "top",
-          )}
+          style={styles.sortItem(sort === "top", hoveredSort === "top")}
           onClick={() => setSort("top")}
           onMouseEnter={() => setHoveredSort("top")}
           onMouseLeave={() => setHoveredSort((h) => (h === "top" ? null : h))}
@@ -168,11 +126,7 @@ export function FeedbackBoard({
         </button>
         <button
           type="button"
-          style={feedbackSortItemStyle(
-            theme,
-            sort === "new",
-            hoveredSort === "new",
-          )}
+          style={styles.sortItem(sort === "new", hoveredSort === "new")}
           onClick={() => setSort("new")}
           onMouseEnter={() => setHoveredSort("new")}
           onMouseLeave={() => setHoveredSort((h) => (h === "new" ? null : h))}
@@ -183,11 +137,7 @@ export function FeedbackBoard({
       </div>
 
       {showSubmit ? (
-        <button
-          type="button"
-          onClick={onNewPost}
-          style={feedbackNewPostStyle(theme)}
-        >
+        <button type="button" onClick={onNewPost} style={styles.newPost}>
           New post
         </button>
       ) : null}
@@ -197,22 +147,20 @@ export function FeedbackBoard({
   const composerEl = composerOpen ? (
     <SubmitForm onSubmitted={onSubmitted} onCancel={() => setComposerOpen(false)} />
   ) : null;
-  const errorEl = error ? (
-    <div style={{ fontSize: 13, color: "#D33A3F" }}>{error}</div>
-  ) : null;
+  const errorEl = error ? <div style={styles.error}>{error}</div> : null;
   const listEl = (
     <FeedbackBoardList
       items={items}
       loading={loading}
       onVote={onVote}
-      onSelect={setSelectedId}
+      onSelect={select}
     />
   );
 
   const detailEl = selectedId ? (
     <FeedbackDetail
       id={selectedId}
-      onBack={() => setSelectedId(null)}
+      onBack={close}
       guarded={guarded}
       onVoteCount={applyVoteCount}
       hideBack={hideDetailBack}
@@ -220,10 +168,10 @@ export function FeedbackBoard({
   ) : null;
 
   return (
-    <div style={feedbackRootStyle(theme, fill)}>
+    <div style={styles.root(fill)}>
       {/* The identity gate pins to the top; the detail/list scroll below it. */}
       {gate ? (
-        <div style={fill ? { padding: "16px 16px 0", flexShrink: 0 } : undefined}>
+        <div style={styles.gateSection(fill)}>
           <IdentityPrompt
             action={gate.action}
             onVerified={(verified) => {
@@ -237,18 +185,18 @@ export function FeedbackBoard({
 
       {detailEl ? (
         fill ? (
-          <div style={feedbackFillSectionStyle()}>{detailEl}</div>
+          <div style={styles.fillSection}>{detailEl}</div>
         ) : (
           detailEl
         )
       ) : fill ? (
         <>
-          <div style={feedbackHeaderSectionStyle()}>
+          <div style={styles.headerSection}>
             {headerRow}
             {composerEl}
             {errorEl}
           </div>
-          <div style={feedbackListScrollStyle()}>{listEl}</div>
+          <div style={styles.listScroll}>{listEl}</div>
         </>
       ) : (
         <>

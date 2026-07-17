@@ -159,6 +159,14 @@ export const CREATE_ROADMAP_ITEM_MUTATION = /* GraphQL */ `
   }
 `;
 
+export const UPDATE_ROADMAP_ITEM_MUTATION = /* GraphQL */ `
+  mutation UpdateRoadmapItem($input: UpdateRoadmapItemInput!) {
+    updateRoadmapItem(input: $input) {
+      ${ROADMAP_FIELDS}
+    }
+  }
+`;
+
 export const MOVE_ROADMAP_ITEM_MUTATION = /* GraphQL */ `
   mutation MoveRoadmapItem($input: MoveRoadmapItemInput!) {
     moveRoadmapItem(input: $input) {

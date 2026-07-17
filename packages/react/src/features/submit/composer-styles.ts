@@ -64,6 +64,24 @@ export function composerStyles(theme: ResolvedTheme) {
       color: theme.muted,
       cursor: "pointer",
     } as CSSProperties,
+    // Round custom checkbox — fills with the brand color once ticked.
+    notifyCheckbox: (checked: boolean) =>
+      ({
+        width: 16,
+        height: 16,
+        flexShrink: 0,
+        padding: 0,
+        borderRadius: "50%",
+        cursor: "pointer",
+        border: `1px solid ${checked ? theme.brand : theme.border}`,
+        background: checked ? theme.brand : "transparent",
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }) as CSSProperties,
+    // The file input is driven by the attach button — visually gone, still in
+    // the DOM so its ref can be clicked.
+    hiddenFileInput: { display: "none" } as CSSProperties,
     // Bottom toolbar: attach on the left, Post on the right.
     toolbar: {
       display: "flex",

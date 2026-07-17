@@ -1,16 +1,19 @@
 "use client";
 
+import { memo } from "react";
+
 import { clampProgress } from "./roadmap-columns";
-import type { RoadmapStyles } from "./roadmap-styles";
+import { roadmapStyles } from "./roadmap-styles";
+import { useStyles } from "../../shared/lib/use-styles";
 import type { PublicRoadmapMilestone } from "../../types";
 
-type Props = {
+export type Props = {
   milestone: PublicRoadmapMilestone;
-  styles: RoadmapStyles;
 };
 
 /** Linked public milestone's live progress. */
-export function RoadmapMilestoneProgress({ milestone, styles }: Props) {
+function RoadmapMilestoneProgressImpl({ milestone }: Props) {
+  const styles = useStyles(roadmapStyles);
   const percent = clampProgress(milestone.progress);
 
   return (
@@ -25,3 +28,11 @@ export function RoadmapMilestoneProgress({ milestone, styles }: Props) {
     </div>
   );
 }
+
+/**
+ * Memoized: `milestone` is now the only prop (the style map it used to be handed
+ * it reads itself), and it's an object straight off the roadmap fetch — its
+ * identity holds until the next refetch. The win is the parent card's hover
+ * re-render, which no longer redraws the progress bar underneath it.
+ */
+export const RoadmapMilestoneProgress = memo(RoadmapMilestoneProgressImpl);
