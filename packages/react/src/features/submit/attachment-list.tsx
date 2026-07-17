@@ -25,7 +25,10 @@ export function AttachmentList({ files, onRemove }: Props) {
     <div style={LIST_STYLE}>
       {files.map((file, index) => (
         <AttachmentPill
-          key={`${file.name}-${file.size}-${index}`}
+          // Keyed on the file's own identity, not its index — removing file 0
+          // otherwise renumbers every later key, remounting each pill and
+          // churning its object-URL thumbnail.
+          key={`${file.name}-${file.size}-${file.lastModified}`}
           file={file}
           onRemove={() => onRemove(index)}
         />

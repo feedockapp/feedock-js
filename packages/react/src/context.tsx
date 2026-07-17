@@ -30,7 +30,7 @@ export function isVisitorIdentity(value: unknown): value is VisitorIdentity {
   );
 }
 
-interface FeedockContextValue {
+export interface FeedockContextValue {
   client: FeedockClient;
   slug: string;
   theme: ResolvedTheme;

@@ -1,12 +1,13 @@
 "use client";
 
-import { useChangelog } from "./use-changelog";
-import { changelogStyles } from "./changelog-styles";
 import { useDetailSelection } from "../../shared/hooks/use-detail-selection";
 import { useStyles } from "../../shared/lib/use-styles";
+import { LoadMore } from "../../shared/ui/load-more";
+import { SpinnerBlock } from "../../shared/ui/spinner";
 import { ChangelogDetail } from "./changelog-detail";
 import { ChangelogListItem } from "./changelog-list-item";
-import { SpinnerBlock } from "../../shared/ui/spinner";
+import { changelogStyles } from "./changelog-styles";
+import { useChangelog } from "./use-changelog";
 
 export interface ChangelogProps {
   /** Deep-link: open this entry's detail when `openItemNonce` advances. */
@@ -32,7 +33,14 @@ export function Changelog({
   reloadKey = 0,
 }: ChangelogProps) {
   const styles = useStyles(changelogStyles);
-  const { items: updates, loading, error } = useChangelog(reloadKey);
+  const {
+    items: updates,
+    loading,
+    error,
+    hasMore,
+    loadingMore,
+    loadMore,
+  } = useChangelog(reloadKey);
   // The host protocol — deep-link open, collapse, and the open/close notify the
   // widget's Back button depends on. See shared/hooks/use-detail-selection.
   const { selectedId, select, close } = useDetailSelection({
@@ -73,12 +81,17 @@ export function Changelog({
     <div style={styles.root}>
       {updates.flatMap((update, i) => {
         const row = (
-          <ChangelogListItem key={update.id} update={update} onSelect={select} />
+          <ChangelogListItem
+            key={update.id}
+            update={update}
+            onSelect={select}
+          />
         );
         return i === 0
           ? [row]
           : [<div key={`divider-${i}`} style={styles.groupDivider} />, row];
       })}
+      {hasMore ? <LoadMore onClick={loadMore} loading={loadingMore} /> : null}
     </div>
   );
 }

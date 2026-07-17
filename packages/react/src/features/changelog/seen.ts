@@ -15,11 +15,30 @@ const seenUpdateKey = (slug: string): string => `feedock:${slug}:seen-update`;
  */
 const listeners = new Set<() => void>();
 
+/**
+ * Cross-tab: the `storage` event fires only in OTHER tabs, so it's the mirror
+ * of the in-memory notify below — dismissing the toast in tab A clears the
+ * badge in tab B. Each reader re-reads its own slug, so one handler covers all.
+ */
+function onStorage(event: StorageEvent): void {
+  if (event.key?.startsWith("feedock:") && event.key.endsWith(":seen-update")) {
+    for (const listener of listeners) {
+      listener();
+    }
+  }
+}
+
 /** Subscribe to last-seen changes. Returns an unsubscribe. */
 export function subscribeSeenUpdate(listener: () => void): () => void {
+  if (listeners.size === 0 && typeof window !== "undefined") {
+    window.addEventListener("storage", onStorage);
+  }
   listeners.add(listener);
   return () => {
     listeners.delete(listener);
+    if (listeners.size === 0 && typeof window !== "undefined") {
+      window.removeEventListener("storage", onStorage);
+    }
   };
 }
 

@@ -18,7 +18,11 @@ type Props = {
 export function Avatar({ name, imageUrl, size = 18 }: Props) {
   const { theme } = useFeedockContext();
   const dark = theme.mode === "dark";
-  const [broken, setBroken] = useState(false);
+  // Track WHICH url failed, not just "broken": a recycled row that swaps in a
+  // new avatarUrl would otherwise stay stuck on the letter forever after one
+  // bad image. A different url is not (yet) broken, so it retries.
+  const [brokenUrl, setBrokenUrl] = useState<string | null>(null);
+  const broken = imageUrl != null && imageUrl === brokenUrl;
   const letter = name.trim().charAt(0).toUpperCase() || "?";
 
   const base = {
@@ -39,7 +43,7 @@ export function Avatar({ name, imageUrl, size = 18 }: Props) {
         alt={name}
         width={size}
         height={size}
-        onError={() => setBroken(true)}
+        onError={() => setBrokenUrl(imageUrl)}
         style={{ ...base, objectFit: "cover" }}
       />
     );

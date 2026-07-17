@@ -44,7 +44,17 @@ export function useFeedbackDetail(id: string) {
 
   const prependComment = useCallback(
     (comment: PublicComment) =>
-      setDetail((d) => (d ? { ...d, comments: [comment, ...d.comments] } : d)),
+      setDetail((d) =>
+        d
+          ? {
+              ...d,
+              comments: [comment, ...d.comments],
+              // Keep the count in step with the list, or the "Comments · N"
+              // header stays one behind after posting.
+              commentCount: d.commentCount + 1,
+            }
+          : d,
+      ),
     [],
   );
 

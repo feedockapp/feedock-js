@@ -82,6 +82,9 @@ export function FeedbackBoard({
     setSort,
     loading,
     error,
+    hasMore,
+    loadingMore,
+    loadMore,
     composerOpen,
     setComposerOpen,
     gate,
@@ -158,11 +161,17 @@ export function FeedbackBoard({
       onVote={onVote}
       onSelect={select}
       searching={debounced.trim().length > 0}
+      hasMore={hasMore}
+      loadingMore={loadingMore}
+      onLoadMore={loadMore}
     />
   );
 
   const detailEl = selectedId ? (
     <FeedbackDetail
+      // Remount per item: a host deep-link can swap id -> id without closing, and
+      // without a key the previous item's comment draft/error would carry over.
+      key={selectedId}
       id={selectedId}
       onBack={close}
       guarded={guarded}

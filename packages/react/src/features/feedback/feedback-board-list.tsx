@@ -1,6 +1,7 @@
 "use client";
 
 import { useStyles } from "../../shared/lib/use-styles";
+import { LoadMore } from "../../shared/ui/load-more";
 import { Spinner, SpinnerBlock } from "../../shared/ui/spinner";
 import type { PublicFeedbackListItem } from "../../types";
 import { feedbackBoardListStyles } from "./feedback-board-list-styles";
@@ -14,6 +15,12 @@ export type Props = {
   onSelect?: (id: string) => void;
   /** A search is active — an empty list means "no matches", not "no feedback". */
   searching?: boolean;
+  /** More pages exist — render the "Load more" control. */
+  hasMore?: boolean;
+  /** A next page is in flight. */
+  loadingMore?: boolean;
+  /** Fetch the next page. */
+  onLoadMore?: () => void;
 };
 
 /**
@@ -27,6 +34,9 @@ export function FeedbackBoardList({
   onVote,
   onSelect,
   searching,
+  hasMore,
+  loadingMore,
+  onLoadMore,
 }: Props) {
   const styles = useStyles(feedbackBoardListStyles);
 
@@ -65,6 +75,9 @@ export function FeedbackBoardList({
           />
         ))}
       </div>
+      {hasMore && onLoadMore ? (
+        <LoadMore onClick={onLoadMore} loading={loadingMore ?? false} />
+      ) : null}
     </div>
   );
 }

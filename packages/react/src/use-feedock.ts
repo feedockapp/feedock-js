@@ -29,6 +29,22 @@ export function useFeedock() {
     return identity.token;
   }, [identity]);
 
+  // Run a token-gated call so a missing token becomes a REJECTED promise, not a
+  // synchronous throw — every write returns a promise, so `.catch()` on it must
+  // actually catch the not-verified error rather than throw past the caller.
+  const withToken = useCallback(
+    <T>(run: (token: string) => Promise<T>): Promise<T> => {
+      let token: string;
+      try {
+        token = requireToken();
+      } catch (error) {
+        return Promise.reject(error as Error);
+      }
+      return run(token);
+    },
+    [requireToken],
+  );
+
   // Memoized as a whole. This is the hook custom UIs build on, so its values
   // land in THEIR dependency arrays and memo comparisons — a fresh object every
   // render would quietly re-fire those. It's also what makes requireToken's
@@ -75,12 +91,14 @@ export function useFeedock() {
       signOut: clearIdentity,
 
       vote(feedbackId: string): Promise<VoteResult> {
-        return client.vote(requireToken(), feedbackId);
+        return withToken((token) => client.vote(token, feedbackId));
       },
 
       /** Follow / unfollow a feedback item ("notify me when this ships"). */
       setFollow(feedbackId: string, following: boolean): Promise<FollowResult> {
-        return client.setFollow(requireToken(), feedbackId, following);
+        return withToken((token) =>
+          client.setFollow(token, feedbackId, following),
+        );
       },
 
       /**
@@ -100,16 +118,18 @@ export function useFeedock() {
         boardSlug?: string;
         notifyMe?: boolean;
       }) {
-        return client.submitFeedback(requireToken(), input);
+        return withToken((token) => client.submitFeedback(token, input));
       },
 
       /** Upload an image/video/file onto a feedback item the visitor just created. */
       uploadAttachment(feedbackId: string, file: File) {
-        return client.uploadAttachment(requireToken(), feedbackId, file);
+        return withToken((token) =>
+          client.uploadAttachment(token, feedbackId, file),
+        );
       },
 
       comment(feedbackId: string, body: string) {
-        return client.comment(requireToken(), feedbackId, body);
+        return withToken((token) => client.comment(token, feedbackId, body));
       },
 
       subscribe(input: {
@@ -121,13 +141,6 @@ export function useFeedock() {
         return client.subscribe(input);
       },
     }),
-    [
-      client,
-      identity,
-      setIdentity,
-      clearIdentity,
-      ensureIdentity,
-      requireToken,
-    ],
+    [client, identity, setIdentity, clearIdentity, ensureIdentity, withToken],
   );
 }

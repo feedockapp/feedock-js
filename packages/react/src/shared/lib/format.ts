@@ -72,5 +72,10 @@ export function formatSize(bytes: number): string {
   if (kb < 1024) {
     return `${Math.round(kb)} KB`;
   }
-  return `${(kb / 1024).toFixed(1)} MB`;
+  const mb = kb / 1024;
+  if (mb < 1024) {
+    return `${mb.toFixed(1)} MB`;
+  }
+  // Without this a multi-GB file read as e.g. "3072.0 MB".
+  return `${(mb / 1024).toFixed(1)} GB`;
 }

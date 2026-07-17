@@ -2,7 +2,11 @@
 // your React app. See docs/features/integration.md.
 
 export { FeedockProvider, useFeedockContext } from "./context";
-export type { FeedockProviderProps, VisitorIdentity } from "./context";
+export type {
+  FeedockContextValue,
+  FeedockProviderProps,
+  VisitorIdentity,
+} from "./context";
 export { useFeedock } from "./use-feedock";
 export { useUnreadUpdate } from "./features/changelog";
 export type { UnreadUpdate } from "./features/changelog";

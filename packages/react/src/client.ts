@@ -145,7 +145,9 @@ export class FeedockClient {
       params.set("q", query.q);
     }
     const qs = params.toString();
-    return this.request(`/feedback${qs ? `?${qs}` : ""}`);
+    // Deduped like listUpdates: the widget mounts Home and the Feedback tab at
+    // once, so opening it fired the same GET /feedback?sort=top twice.
+    return this.sharedRead(`/feedback${qs ? `?${qs}` : ""}`);
   }
 
   getItem(id: string): Promise<PublicFeedbackDetail> {

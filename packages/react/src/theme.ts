@@ -36,16 +36,42 @@ const LIGHT: Omit<ResolvedTheme, "mode" | "brand" | "onBrand"> = {
   subtle: "#F1F4F9",
 };
 
+/**
+ * The readable text/glyph color to place ON the brand fill — dark ink on a light
+ * brand, white on a dark one. A founder can set any brand color, so a fixed
+ * white gave unreadable buttons on a pale accent.
+ */
+function onBrandColor(brand: string): string {
+  const hex = brand.replace("#", "");
+  if (hex.length !== 3 && hex.length !== 6) {
+    return "#ffffff"; // unparseable (e.g. a CSS name) — keep the old default
+  }
+  const full =
+    hex.length === 3
+      ? hex
+          .split("")
+          .map((c) => c + c)
+          .join("")
+      : hex;
+  const r = parseInt(full.slice(0, 2), 16);
+  const g = parseInt(full.slice(2, 4), 16);
+  const b = parseInt(full.slice(4, 6), 16);
+  // Perceived (Rec. 601) luminance; > ~55% reads as a light fill.
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance > 0.55 ? "#111111" : "#ffffff";
+}
+
 /** Resolve the palette from the requested mode + brand color. */
 export function resolveTheme(
   mode: "light" | "dark",
   brandColor?: string | null,
 ): ResolvedTheme {
   const base = mode === "dark" ? DARK : LIGHT;
+  const brand = brandColor || DEFAULT_BRAND;
   return {
     mode,
-    brand: brandColor || DEFAULT_BRAND,
-    onBrand: "#ffffff",
+    brand,
+    onBrand: onBrandColor(brand),
     ...base,
   };
 }

@@ -4,11 +4,14 @@ import type { CSSProperties } from "react";
 export function toExcerpt(html: string, max: number): string {
   const text = html
     .replace(/<[^>]*>/g, " ")
-    .replace(/&amp;/g, "&")
+    // &nbsp; first — TipTap emits it constantly, and left literal it shows as
+    // "&nbsp;" in the toast. Decode &amp; LAST so it can't turn "&amp;lt;" into "<".
+    .replace(/&nbsp;/g, " ")
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
     .replace(/&#39;/g, "'")
     .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, "&")
     .replace(/\s+/g, " ")
     .trim();
   return text.length > max ? `${text.slice(0, max).trimEnd()}…` : text;

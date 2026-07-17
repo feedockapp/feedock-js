@@ -27,6 +27,10 @@ export function useSimilarFeedback(
   useEffect(() => {
     const trimmed = title.trim();
     if (trimmed.length < MIN_TITLE_LENGTH) {
+      // Bump the sequence here too, or an in-flight request from before the
+      // title was cut short still passes the `mySeq === seq.current` check and
+      // repopulates matches for text the visitor already deleted.
+      seq.current += 1;
       setMatches([]);
       return;
     }
