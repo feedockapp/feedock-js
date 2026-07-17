@@ -17,6 +17,7 @@ import { z } from "zod";
 
 import {
   CHANGELOG_ENTRIES_QUERY,
+  CURRENT_PROJECT_QUERY,
   FEEDBACK_LIST_QUERY,
   MILESTONES_QUERY,
   ROADMAP_ITEMS_QUERY,
@@ -87,6 +88,13 @@ const MilestoneProgress = z.object({
   taskCount: z.number().int().min(0),
   doneTaskCount: z.number().int().min(0),
 });
+
+/** id · name · slug of a project, as both the API and the session report it. */
+interface ProjectIdentity {
+  id: string;
+  name: string;
+  slug: string;
+}
 
 const OverviewOutput = {
   project: z
@@ -159,7 +167,25 @@ export function registerOverviewTool(
     },
     async (): Promise<CallToolResult> => {
       try {
-        const [feedback, roadmap, tasks, milestones, changelog] =
+        // A selected project already names itself; a BOUND token does not, so ask
+        // the API which project it scoped this request to. Tolerated as a soft
+        // failure: an API older than `currentProject` (or any hiccup) should cost
+        // the identity line, not the whole snapshot.
+        const identity = session?.projectId
+          ? Promise.resolve({
+              currentProject: {
+                id: session.projectId,
+                name: session.projectName ?? "",
+                slug: session.projectSlug ?? "",
+              },
+            })
+          : client
+              .request<{ currentProject: ProjectIdentity }>(
+                CURRENT_PROJECT_QUERY,
+              )
+              .catch(() => null);
+
+        const [feedback, roadmap, tasks, milestones, changelog, project] =
           await Promise.all([
             client.request<{ feedbackList: FeedbackRow[] }>(
               FEEDBACK_LIST_QUERY,
@@ -173,6 +199,7 @@ export function registerOverviewTool(
             client.request<{ changelogEntries: ChangelogRow[] }>(
               CHANGELOG_ENTRIES_QUERY,
             ),
+            identity,
           ]);
 
         const openRows = feedback.feedbackList.filter(
@@ -186,13 +213,7 @@ export function registerOverviewTool(
           // The token binds the project (or the session selected it) — the model
           // never passes one, so say which board this is rather than leaving the
           // agent to guess when several are configured.
-          project: session?.projectId
-            ? {
-                id: session.projectId,
-                name: session.projectName ?? "",
-                slug: session.projectSlug ?? "",
-              }
-            : null,
+          project: project?.currentProject ?? null,
           openFeedback: {
             count: openRows.length,
             mayBeTruncated: atCap(feedback.feedbackList.length),

@@ -465,3 +465,21 @@ export const MCP_PROJECTS_QUERY = /* GraphQL */ `
     }
   }
 `;
+
+// --- Projects (any token) ----------------------------------------------------
+
+/**
+ * The project this token already works in. Unlike `mcpProjects` this names ONE
+ * project — the caller's own — so a project-bound token may ask, and must be
+ * able to: it is otherwise the one caller that cannot find out which board it is
+ * about to write to.
+ */
+export const CURRENT_PROJECT_QUERY = /* GraphQL */ `
+  query CurrentProject {
+    currentProject {
+      id
+      name
+      slug
+    }
+  }
+`;
