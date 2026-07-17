@@ -38,20 +38,19 @@ const READMES = ["mcp", "react"].map((p) => ({
   text: readFileSync(join(PACKAGES, p, "README.md"), "utf8"),
 }));
 
-/** Every markdown file npm renders on the package page — README AND CHANGELOG.
- *  The first version of this guard checked only the README, and the scope
- *  rename duly rotted `CHANGELOG.md` where nothing was looking: it kept telling
- *  readers to run `npx @feedockapp/mcp`, a package that does not exist. */
-const PUBLISHED_DOCS = ["mcp", "react"].flatMap((p) =>
-  ["README.md", "CHANGELOG.md"].map((f) => ({
-    name: `${p}/${f}`,
-    text: readFileSync(join(PACKAGES, p, f), "utf8"),
-  })),
-);
-
-/** The scope we abandoned. Nothing under it is published, so every mention is
- *  an install instruction that 404s. */
+/** The scope we abandoned. Nothing is published under it, so a reader who copies
+ *  an `@feedockapp/…` name out of a live instruction gets a 404. */
 const DEAD_SCOPE = /@feedockapp\//;
+
+/** The CHANGELOG's H1 — the package it claims to be the history OF. The rename
+ *  left this line reading `# @feedockapp/mcp` with nothing watching it. */
+const CHANGELOGS = ["mcp", "react"].map((p) => ({
+  name: `${p}/CHANGELOG.md`,
+  expected: `@feedock/${p}`,
+  title: readFileSync(join(PACKAGES, p, "CHANGELOG.md"), "utf8")
+    .split("\n")[0]
+    ?.trim(),
+}));
 
 /** The private source repo — unreachable for a reader. (`feedock-js`, the
  *  public mirror, must not match: the `(?!-js)` keeps them apart.) */
@@ -80,10 +79,23 @@ describe.each(MANIFESTS)("$name package links", (m) => {
   });
 });
 
-describe.each(PUBLISHED_DOCS)("$name names a package that exists", ({ text }) => {
+// The live install surface — what a reader copies TODAY. A dead name here is an
+// instruction that 404s, so nothing may carry one.
+describe.each(READMES)("$name README names a package that exists", ({ text }) => {
   it("never points at the abandoned @feedockapp scope", () => {
-    const lines = text.split("\n").filter((l) => DEAD_SCOPE.test(l));
-    expect(lines).toEqual([]);
+    expect(text.split("\n").filter((l) => DEAD_SCOPE.test(l))).toEqual([]);
+  });
+});
+
+// The CHANGELOG is different in kind, and the first version of this guard got it
+// wrong by treating it the same: it banned the dead scope from the whole file and
+// then failed on the very entry DESCRIBING the rename, which quotes the old name
+// on purpose. A changelog is history — naming what something used to be called is
+// its job. Only the H1 has to be current, because that names the package the file
+// is the history of, and that is the line the rename actually rotted.
+describe.each(CHANGELOGS)("$name is titled for the current package", (c) => {
+  it(`is headed ${c.expected}`, () => {
+    expect(c.title).toBe(`# ${c.expected}`);
   });
 });
 
