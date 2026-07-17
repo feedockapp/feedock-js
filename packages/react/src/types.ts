@@ -34,6 +34,8 @@ export interface PublicProjectConfig {
   /** White-label: when true, hide the "Powered by Feedock" footer. */
   hideBranding: boolean;
   launcherPosition: string;
+  /** Launcher shows only the icon (no "Feedback" label) when true. */
+  launcherIconOnly: boolean;
   boards: PublicBoard[];
 }
 
