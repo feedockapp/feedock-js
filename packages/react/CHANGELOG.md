@@ -1,5 +1,12 @@
 # @feedock/react
 
+## 0.5.1
+
+### Patch Changes
+
+- c018979: Dismissing the "what's new" toast now clears the launcher's unread dot. The two read the same last-seen key, but the badge only checked it on mount — so dismissing an update left the dot claiming it was still unread until something remounted the widget.
+- 4906875: Read surfaces now share one fetch hook. Two of them (the "what's new" toast and the launcher's unread dot) used to swallow fetch errors entirely, so a failed load left no trace; all read hooks now handle loading and errors the same way, and none silently drop a failure. No public API change.
+
 ## 0.5.0
 
 ### Minor Changes
