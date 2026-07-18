@@ -1,5 +1,15 @@
 # @feedock/react
 
+## 0.7.1
+
+### Patch Changes
+
+- 9a63b9f: Colour code blocks in rendered rich-text bodies. Code arrives already
+  highlighted from the public API (inert `hljs-*` token spans); the SDK now sets
+  the token colours and code surface **inline** after render — in the provider's
+  resolved light/dark mode — so it stays self-contained (no injected stylesheet)
+  and ships **no** syntax-highlighter engine.
+
 ## 0.7.0
 
 ### Minor Changes
