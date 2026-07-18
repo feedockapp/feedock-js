@@ -312,3 +312,10 @@ export function redactForAi(text: string): string {
     text,
   );
 }
+
+// Markdown → sanitized rich-text HTML. Lives next to the allow-list it targets
+// and is shared by the two markdown producers: the MCP write tools (models write
+// markdown) and the GitHub Release → changelog ingestion (release notes are
+// markdown). Re-exported last so its `sanitizeRichText` import resolves against
+// the definitions above (both are call-time, so the module cycle is benign).
+export { markdownToHtml, toRichTextHtml } from "./markdown";
