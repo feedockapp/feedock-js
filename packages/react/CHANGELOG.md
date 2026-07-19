@@ -1,5 +1,15 @@
 # @feedock/react
 
+## 0.8.0
+
+### Minor Changes
+
+- a153c3b: Cross-surface link handoff: a new `boardOrigins` prop on `<FeedockProvider>` (and `data-board-origins` on the widget). When set alongside `userToken`/`getUserToken`, the SDK auto-appends a fresh single-use identity token to plain left-clicks navigating to those origins — so a signed-in user who follows a link from your app onto your Feedock board arrives already recognized, no email prompt. Opt-in and bounded to the configured origins; modified clicks and token-fetch failures fall through undecorated.
+
+### Patch Changes
+
+- 45d93db: SSO auto-identify now reuses an already-valid stored visitor session instead of re-exchanging the host token on every mount. This cuts identity API calls (and the server-side write per exchange) from once-per-page-view to roughly once per token lifetime, and speeds up the identified experience. An explicit `userToken` for a **different** user still re-identifies (user switch), and a bad/expired token still falls back to the email flow.
+
 ## 0.7.1
 
 ### Patch Changes
