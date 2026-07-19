@@ -64,6 +64,13 @@ function ssoTokenEmail(token: string): string | null {
   return typeof email === "string" ? email.toLowerCase() : null;
 }
 
+/**
+ * Query param the cross-surface link handoff carries — a host-signed SSO token the
+ * board trades in so a user linked from the product arrives already recognized.
+ * Sign it single-use (`jti`) + short-lived; the board strips it on arrival.
+ */
+const SSO_HANDOFF_PARAM = "fdk_sso";
+
 export interface FeedockContextValue {
   client: FeedockClient;
   slug: string;
@@ -174,6 +181,16 @@ export interface FeedockProviderProps {
    * Keep the function stable (memoize it) — it's read once per mount.
    */
   getUserToken?: () => Promise<string | null>;
+  /**
+   * Origins of YOUR Feedock board/roadmap/changelog (e.g.
+   * `["https://feedback.acme.com"]`, or `["https://feedbase.app"]` for the hosted
+   * portal). When set alongside `userToken`/`getUserToken`, the SDK auto-appends a
+   * fresh single-use identity token to plain left-clicks navigating to those
+   * origins — so a signed-in user who follows a link from your app lands on the
+   * board already recognized (no email prompt). Opt-in + bounded to these origins;
+   * modified clicks (new tab) and token failures fall through undecorated.
+   */
+  boardOrigins?: string[];
   children: ReactNode;
 }
 
@@ -189,6 +206,7 @@ export function FeedockProvider({
   theme,
   userToken,
   getUserToken,
+  boardOrigins,
   children,
 }: FeedockProviderProps) {
   const client = useMemo(
@@ -351,6 +369,70 @@ export function FeedockProvider({
       active = false;
     };
   }, [userToken, client, persist, storageKey]);
+
+  // Cross-surface link handoff (Slice 2): when the host lists its board origin(s),
+  // auto-append a FRESH single-use identity token to plain left-clicks navigating
+  // there, so a signed-in user who follows a link from the app arrives on the board
+  // already recognized. Opt-in + bounded to the configured origins; a modified
+  // click (new tab), a foreign origin, or a token-fetch failure falls through
+  // undecorated → the visitor just uses the normal email flow. Delegated on the
+  // document (capture) so it covers ANY of the host's links, not only SDK-rendered.
+  const boardOriginsKey = (boardOrigins ?? []).join("|");
+  useEffect(() => {
+    if (typeof document === "undefined" || !boardOriginsKey) {
+      return undefined;
+    }
+    const origins = new Set(boardOriginsKey.split("|"));
+    const onClick = (event: MouseEvent) => {
+      if (
+        event.defaultPrevented ||
+        event.button !== 0 ||
+        event.metaKey ||
+        event.ctrlKey ||
+        event.shiftKey ||
+        event.altKey
+      ) {
+        return;
+      }
+      const target = event.target as Element | null;
+      const anchor = target?.closest?.("a[href]") as HTMLAnchorElement | null;
+      if (!anchor || (anchor.target && anchor.target !== "_self")) {
+        return; // no anchor, or opens a new tab/window (can't async-decorate)
+      }
+      let dest: URL;
+      try {
+        dest = new URL(anchor.href, window.location.href);
+      } catch {
+        return;
+      }
+      if (
+        !origins.has(dest.origin) ||
+        dest.searchParams.has(SSO_HANDOFF_PARAM)
+      ) {
+        return;
+      }
+      // A board-bound plain left-click: intercept, mint a fresh token, navigate.
+      event.preventDefault();
+      void (async () => {
+        let token: string | null = userToken ?? null;
+        if (!token && getUserTokenRef.current) {
+          try {
+            token = await getUserTokenRef.current();
+          } catch {
+            token = null;
+          }
+        }
+        if (token) {
+          dest.searchParams.set(SSO_HANDOFF_PARAM, token);
+        }
+        window.location.assign(dest.href);
+      })();
+    };
+    document.addEventListener("click", onClick, true);
+    return () => {
+      document.removeEventListener("click", onClick, true);
+    };
+  }, [boardOriginsKey, userToken]);
 
   // Resolve identity without prompting: current session, else the in-flight
   // auto-identify, else null. Reads `identity` live via a ref so a caller that
