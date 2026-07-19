@@ -1,0 +1,61 @@
+{
+  "name": "@feedock/sso",
+  "version": "0.0.0",
+  "description": "Sign Feedock identity tokens on your backend so signed-in users skip email verification in the Feedock widget and React SDK.",
+  "license": "MIT",
+  "author": "Feedock",
+  "homepage": "https://feedock.com/developers#identity",
+  "bugs": {
+    "url": "https://feedback.feedock.com"
+  },
+  "keywords": [
+    "feedock",
+    "sso",
+    "jwt",
+    "identity",
+    "feedback",
+    "authentication",
+    "saas"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "clean": "rm -rf dist .turbo"
+  },
+  "dependencies": {
+    "jose": "^6.2.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9",
+    "@stylistic/eslint-plugin": "^5",
+    "eslint": "^9",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8",
+    "vitest": "^4.1.9"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/feedockapp/feedock-js.git",
+    "directory": "packages/sso"
+  }
+}

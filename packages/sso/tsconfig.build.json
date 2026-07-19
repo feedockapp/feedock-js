@@ -1,0 +1,12 @@
+{
+  // Emit config. Split from tsconfig.json so `typecheck` covers the specs while
+  // the published `dist` ships only the library.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "declaration": true,
+    "outDir": "dist",
+    "rootDir": "src"
+  },
+  "exclude": ["src/**/*.spec.ts"]
+}

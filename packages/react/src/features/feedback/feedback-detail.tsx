@@ -3,17 +3,17 @@
 import { useState } from "react";
 
 import { useFeedockContext, type VisitorIdentity } from "../../context";
-import { useFeedbackDetail } from "./use-feedback-detail";
-import { escapeHtml } from "./feedback-detail-escape";
-import { feedbackDetailStyles } from "./feedback-detail-styles";
-import { CommentRow } from "./feedback-comment-row";
 import { DATE_STYLE, formatDate } from "../../shared/lib/format";
 import { useStyles } from "../../shared/lib/use-styles";
-import { statusTone } from "../../theme";
 import { Avatar } from "../../shared/ui/avatar";
-import { StatusIcon, VoteCaretIcon } from "./feedback-card-icons";
 import { SafeHtml } from "../../shared/ui/safe-html";
 import { SpinnerBlock } from "../../shared/ui/spinner";
+import { statusTone } from "../../theme";
+import { StatusIcon, VoteCaretIcon } from "./feedback-card-icons";
+import { CommentRow } from "./feedback-comment-row";
+import { escapeHtml } from "./feedback-detail-escape";
+import { feedbackDetailStyles } from "./feedback-detail-styles";
+import { useFeedbackDetail } from "./use-feedback-detail";
 
 export type Props = {
   id: string;
@@ -63,7 +63,10 @@ export function FeedbackDetail({
 
   function submitComment() {
     const body = comment.trim();
-    if (!body || !detail) {
+    // `posting` matters for the keyboard path: the button is disabled while a
+    // comment is in flight, but ⌘/Ctrl+Enter doesn't go through the button, so
+    // without this a fast double-press would post twice.
+    if (!body || !detail || posting) {
       return;
     }
     guarded("comment", (identity) => {
@@ -160,6 +163,14 @@ export function FeedbackDetail({
             <textarea
               value={comment}
               onChange={(e) => setComment(e.target.value)}
+              onKeyDown={(e) => {
+                // ⌘/Ctrl+Enter sends. A bare Enter still makes a newline — the
+                // box is multi-line, so it can't be the send key.
+                if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                  e.preventDefault();
+                  submitComment();
+                }
+              }}
               placeholder="Add a comment…"
               style={styles.textarea}
             />
@@ -167,6 +178,8 @@ export function FeedbackDetail({
               type="button"
               onClick={submitComment}
               disabled={posting || comment.trim().length === 0}
+              title="Comment (⌘↵ / Ctrl+↵)"
+              aria-keyshortcuts="Meta+Enter Control+Enter"
               style={styles.postButton(posting || comment.trim().length === 0)}
             >
               {posting ? "Posting…" : "Comment"}

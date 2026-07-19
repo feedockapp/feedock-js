@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    // DOM gives the Web-standard Request/Response/crypto types this package
+    // targets — it must run on any Fetch-API runtime (Node, Deno, Bun, Workers),
+    // so it deliberately does NOT depend on @types/node.
+    "lib": ["ES2023", "DOM"]
+  },
+  "include": ["src"]
+}
