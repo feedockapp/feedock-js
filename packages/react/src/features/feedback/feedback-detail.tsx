@@ -22,6 +22,8 @@ export type Props = {
   guarded: (action: string, run: (identity: VisitorIdentity) => void) => void;
   /** Fan a detail vote back into the list so its count isn't stale on back. */
   onVoteCount?: (id: string, voteCount: number) => void;
+  /** Same for a posted comment — otherwise the card still reads the old count. */
+  onCommentCount?: (id: string, commentCount: number) => void;
   /** Hide the in-body back affordance when the host renders its own (widget). */
   hideBack?: boolean;
 };
@@ -36,6 +38,7 @@ export function FeedbackDetail({
   onBack,
   guarded,
   onVoteCount,
+  onCommentCount,
   hideBack,
 }: Props) {
   const { client } = useFeedockContext();
@@ -79,10 +82,17 @@ export function FeedbackDetail({
             id: `local-${detail.comments.length}-${body.length}`,
             body: escapeHtml(body),
             authorName: "You",
+            // The visitor's own avatar isn't known client-side (identity carries
+            // email + token only), so the optimistic row draws a letter-avatar;
+            // a refetch replaces it with the real one.
+            authorAvatarUrl: null,
             isOfficial: false,
             createdAt: new Date().toISOString(),
           });
           setComment("");
+          // Keep the list card in step — it holds its own copy of the count and
+          // never refetches on back, so without this it still shows the old one.
+          onCommentCount?.(detail.id, detail.commentCount + 1);
         })
         .catch((e: unknown) =>
           setCommentError(

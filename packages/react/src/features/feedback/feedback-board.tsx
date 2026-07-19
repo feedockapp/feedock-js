@@ -94,6 +94,7 @@ export function FeedbackBoard({
     onSubmitted,
     guarded,
     applyVoteCount,
+    applyCommentCount,
   } = useFeedbackBoard(defaultSort, debounced, reloadKey);
 
   const headerRow = (
@@ -176,6 +177,7 @@ export function FeedbackBoard({
       onBack={close}
       guarded={guarded}
       onVoteCount={applyVoteCount}
+      onCommentCount={applyCommentCount}
       hideBack={hideDetailBack}
     />
   ) : null;

@@ -2,11 +2,12 @@
 
 import { memo } from "react";
 
-import { feedbackCommentRowStyles } from "./feedback-comment-row-styles";
 import { DATE_STYLE, formatDate } from "../../shared/lib/format";
 import { useStyles } from "../../shared/lib/use-styles";
-import type { PublicComment } from "../../types";
+import { Avatar } from "../../shared/ui/avatar";
 import { SafeHtml } from "../../shared/ui/safe-html";
+import type { PublicComment } from "../../types";
+import { feedbackCommentRowStyles } from "./feedback-comment-row-styles";
 
 export type Props = {
   comment: PublicComment;
@@ -19,8 +20,15 @@ function CommentRowImpl({ comment }: Props) {
   return (
     <div style={styles.root}>
       <div style={styles.meta}>
+        <Avatar
+          name={comment.authorName}
+          imageUrl={comment.authorAvatarUrl}
+          size={20}
+        />
         <span style={styles.author}>{comment.authorName}</span>
-        {comment.isOfficial ? <span style={styles.officialBadge}>TEAM</span> : null}
+        {comment.isOfficial ? (
+          <span style={styles.officialBadge}>TEAM</span>
+        ) : null}
         <span style={styles.time}>
           {formatDate(comment.createdAt, DATE_STYLE.Short)}
         </span>

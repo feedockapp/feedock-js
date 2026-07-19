@@ -79,6 +79,8 @@ export interface PublicComment {
   id: string;
   body: string;
   authorName: string;
+  /** Author's avatar, or null → the letter-avatar fallback. */
+  authorAvatarUrl: string | null;
   isOfficial: boolean;
   createdAt: string;
 }

@@ -34,6 +34,7 @@ const FEEDBACK_LIST_ACTION = {
   Appended: "appended",
   Failed: "failed",
   VoteCount: "vote-count",
+  CommentCount: "comment-count",
   Submitted: "submitted",
 } as const;
 
@@ -55,6 +56,11 @@ type FeedbackListAction =
       type: typeof FEEDBACK_LIST_ACTION.VoteCount;
       id: string;
       voteCount: number;
+    }
+  | {
+      type: typeof FEEDBACK_LIST_ACTION.CommentCount;
+      id: string;
+      commentCount: number;
     }
   | {
       type: typeof FEEDBACK_LIST_ACTION.Submitted;
@@ -110,6 +116,15 @@ function feedbackListReducer(
           it.id === action.id ? { ...it, voteCount: action.voteCount } : it,
         ),
       };
+    case FEEDBACK_LIST_ACTION.CommentCount:
+      return {
+        ...state,
+        items: state.items.map((it) =>
+          it.id === action.id
+            ? { ...it, commentCount: action.commentCount }
+            : it,
+        ),
+      };
     case FEEDBACK_LIST_ACTION.Submitted:
       return { ...state, error: null, items: [action.item, ...state.items] };
   }
@@ -139,6 +154,8 @@ export type UseFeedbackBoard = {
   guarded: (action: string, run: (identity: VisitorIdentity) => void) => void;
   /** Apply a vote count from elsewhere (e.g. the detail view) into the list. */
   applyVoteCount: (id: string, voteCount: number) => void;
+  /** Apply a comment count from the detail view, so a card isn't stale on back. */
+  applyCommentCount: (id: string, commentCount: number) => void;
 };
 
 /**
@@ -281,6 +298,16 @@ export function useFeedbackBoard(
     [],
   );
 
+  const applyCommentCount = useCallback(
+    (id: string, commentCount: number) =>
+      dispatchList({
+        type: FEEDBACK_LIST_ACTION.CommentCount,
+        id,
+        commentCount,
+      }),
+    [],
+  );
+
   const onSubmitted = useCallback((item: PublicFeedbackListItem) => {
     dispatchList({ type: FEEDBACK_LIST_ACTION.Submitted, item });
     setComposerOpen(false);
@@ -305,6 +332,7 @@ export function useFeedbackBoard(
       onSubmitted,
       guarded,
       applyVoteCount,
+      applyCommentCount,
     }),
     [
       list.items,
@@ -321,6 +349,7 @@ export function useFeedbackBoard(
       onSubmitted,
       guarded,
       applyVoteCount,
+      applyCommentCount,
     ],
   );
 }
