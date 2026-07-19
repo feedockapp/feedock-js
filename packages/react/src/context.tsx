@@ -30,6 +30,40 @@ export function isVisitorIdentity(value: unknown): value is VisitorIdentity {
   );
 }
 
+/** Re-identify this early before a token's real expiry (never let a write 401). */
+const TOKEN_REFRESH_SKEW_MS = 60_000;
+
+/** Decode a JWT payload WITHOUT verifying (claims only — the API verifies). */
+function decodeJwtPayload(token: string): Record<string, unknown> | null {
+  try {
+    const part = token.split(".")[1];
+    if (!part) {
+      return null;
+    }
+    const json = atob(part.replace(/-/g, "+").replace(/_/g, "/"));
+    const parsed: unknown = JSON.parse(json);
+    return typeof parsed === "object" && parsed !== null
+      ? (parsed as Record<string, unknown>)
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+/** A stored visitor token still comfortably in its validity window. */
+function isVisitorTokenFresh(token: string): boolean {
+  const exp = decodeJwtPayload(token)?.exp;
+  return (
+    typeof exp === "number" && exp * 1000 - Date.now() > TOKEN_REFRESH_SKEW_MS
+  );
+}
+
+/** The email a host SSO token asserts (for matching against a stored session). */
+function ssoTokenEmail(token: string): string | null {
+  const email = decodeJwtPayload(token)?.email;
+  return typeof email === "string" ? email.toLowerCase() : null;
+}
+
 export interface FeedockContextValue {
   client: FeedockClient;
   slug: string;
@@ -255,6 +289,32 @@ export function FeedockProvider({
   useEffect(() => {
     let active = true;
     const run = (async (): Promise<VisitorIdentity | null> => {
+      // Reuse an already-stored, still-valid visitor session instead of exchanging
+      // again — the exchange is an API round-trip + a Requester DB write, and
+      // without this it re-runs on EVERY mount/page-view (write amplification that
+      // also pumps the SSO rate limit). Skip when the host asserts no specific user
+      // (getUserToken path) or asserts the SAME user the stored session is for; an
+      // explicit userToken for a DIFFERENT user still re-identifies (user switch).
+      let stored: VisitorIdentity | null = null;
+      try {
+        const raw = window.localStorage.getItem(storageKey);
+        const parsed: unknown = raw ? JSON.parse(raw) : null;
+        if (isVisitorIdentity(parsed)) {
+          stored = parsed;
+        }
+      } catch {
+        stored = null;
+      }
+      if (stored && isVisitorTokenFresh(stored.token)) {
+        const asserted = userToken ? ssoTokenEmail(userToken) : null;
+        if (!userToken || asserted === stored.email.toLowerCase()) {
+          if (active) {
+            setIdentityState(stored);
+          }
+          return stored;
+        }
+      }
+
       let token: string | null = userToken ?? null;
       if (!token && getUserTokenRef.current) {
         try {
@@ -290,7 +350,7 @@ export function FeedockProvider({
     return () => {
       active = false;
     };
-  }, [userToken, client, persist]);
+  }, [userToken, client, persist, storageKey]);
 
   // Resolve identity without prompting: current session, else the in-flight
   // auto-identify, else null. Reads `identity` live via a ref so a caller that
