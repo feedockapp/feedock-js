@@ -304,6 +304,26 @@ export function FeedockProvider({
   getUserTokenRef.current = getUserToken;
   const resolveRef = useRef<Promise<VisitorIdentity | null> | null>(null);
 
+  // The host's identity token for this render: an explicit `userToken` wins;
+  // otherwise fall back to the `getUserToken` fetch (read via the ref so a new
+  // callback identity doesn't churn the effects). Never throws — a fetch failure
+  // yields null and the visitor falls back to email verification. Shared by both
+  // the auto-identify effect and the link-handoff decorator so the precedence
+  // can't drift.
+  const resolveHostToken = useCallback(async (): Promise<string | null> => {
+    if (userToken) {
+      return userToken;
+    }
+    if (getUserTokenRef.current) {
+      try {
+        return await getUserTokenRef.current();
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  }, [userToken]);
+
   useEffect(() => {
     let active = true;
     const run = (async (): Promise<VisitorIdentity | null> => {
@@ -333,14 +353,7 @@ export function FeedockProvider({
         }
       }
 
-      let token: string | null = userToken ?? null;
-      if (!token && getUserTokenRef.current) {
-        try {
-          token = await getUserTokenRef.current();
-        } catch {
-          token = null;
-        }
-      }
+      const token = await resolveHostToken();
       if (!token) {
         return null;
       }
@@ -368,7 +381,7 @@ export function FeedockProvider({
     return () => {
       active = false;
     };
-  }, [userToken, client, persist, storageKey]);
+  }, [userToken, client, persist, storageKey, resolveHostToken]);
 
   // Cross-surface link handoff (Slice 2): when the host lists its board origin(s),
   // auto-append a FRESH single-use identity token to plain left-clicks navigating
@@ -414,14 +427,7 @@ export function FeedockProvider({
       // A board-bound plain left-click: intercept, mint a fresh token, navigate.
       event.preventDefault();
       void (async () => {
-        let token: string | null = userToken ?? null;
-        if (!token && getUserTokenRef.current) {
-          try {
-            token = await getUserTokenRef.current();
-          } catch {
-            token = null;
-          }
-        }
+        const token = await resolveHostToken();
         if (token) {
           dest.searchParams.set(SSO_HANDOFF_PARAM, token);
         }
@@ -432,7 +438,7 @@ export function FeedockProvider({
     return () => {
       document.removeEventListener("click", onClick, true);
     };
-  }, [boardOriginsKey, userToken]);
+  }, [boardOriginsKey, resolveHostToken]);
 
   // Resolve identity without prompting: current session, else the in-flight
   // auto-identify, else null. Reads `identity` live via a ref so a caller that
