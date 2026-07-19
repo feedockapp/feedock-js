@@ -1,5 +1,12 @@
 # @feedock/react
 
+## 0.8.1
+
+### Patch Changes
+
+- 4420804: Comments now show the author's avatar, and posting one updates the count on the feedback card. Previously the card still read the old count after you commented, because only vote counts were fanned back to the list.
+- 50291ac: Send a comment with ⌘/Ctrl+Enter. A bare Enter still adds a newline, so multi-line comments are unaffected.
+
 ## 0.8.0
 
 ### Minor Changes

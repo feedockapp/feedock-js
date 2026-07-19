@@ -1,6 +1,6 @@
 {
   "name": "@feedock/sso",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Sign Feedock identity tokens on your backend so signed-in users skip email verification in the Feedock widget and React SDK.",
   "license": "MIT",
   "author": "Feedock",
