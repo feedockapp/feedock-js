@@ -103,6 +103,38 @@ export function looksLikeRichHtml(text: string | null | undefined): boolean {
   return !!text && RICH_TAG.test(text);
 }
 
+/** Escape the five HTML-significant characters in a run of plain text. */
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+/**
+ * Convert PLAIN TEXT into safe rich-text HTML for a body stored + rendered as
+ * rich text (Feedback/Doc bodies are HTML at rest). Escapes every character so a
+ * tag-like token ("<select>") survives as literal text, splits blank-line-
+ * separated blocks into `<p>`, and keeps single newlines as `<br>`. The output
+ * is already within `sanitizeRichText`'s allow-list, so re-sanitizing it is a
+ * no-op — this is the correct writer for a plain-text source (unlike
+ * `sanitizeRichText`, which would DROP the tag-like tokens and the newlines).
+ */
+export function plainTextToHtml(text: string | null | undefined): SafeHtml {
+  if (!text || !text.trim()) {
+    return "" as SafeHtml;
+  }
+  const paragraphs = text
+    .replace(/\r\n/g, "\n")
+    .split(/\n{2,}/)
+    .map((block) => block.trim())
+    .filter(Boolean)
+    .map((block) => `<p>${escapeHtml(block).replace(/\n/g, "<br>")}</p>`);
+  return paragraphs.join("") as SafeHtml;
+}
+
 /**
  * The ONLY `<img src>` shape allowed in a doc body: the app's own attachment
  * download route with a UUID id — exactly what the editor's image-upload tool
