@@ -259,6 +259,15 @@ export function sanitizeDocHtml(html: string | null | undefined): SafeHtml {
  * vectors must be computed on identically-redacted text or NN search breaks.
  */
 const REDACTIONS: ReadonlyArray<readonly [RegExp, string]> = [
+  // Feedock's OWN PAT (`fdk_pat_<64 hex>` — apps/api/src/token/token.constants.ts).
+  // Leads the list because it is the credential most likely to appear in Feedock's
+  // own feedback: "my token fdk_pat_… returns 401" pasted straight into the board.
+  // The prefix is the discriminator, so the length bound only has to separate a
+  // real secret (64 hex) from the 6-hex DISPLAY prefix `fdk_pat_ab12cd` that the
+  // UI shows on purpose — that one must survive, it is the handle a user names
+  // their token by and triage needs it. 32 leaves room for a paste that lost a
+  // character: most of a live secret is still a secret.
+  [/\bfdk_pat_[0-9a-fA-F]{32,}\b/g, "[REDACTED_TOKEN]"],
   // PEM private key blocks (any type).
   [
     /-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----[\s\S]*?-----END [A-Z0-9 ]*PRIVATE KEY-----/g,
