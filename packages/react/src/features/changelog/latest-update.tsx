@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 
-import { useFeedockContext } from "../../context";
 import { useLatestUpdate } from "./use-latest-update";
 import { toExcerpt } from "./latest-update-text";
 import { latestUpdateStyles } from "./latest-update-styles";
@@ -25,9 +24,7 @@ export type Props = {
  * animation dependency). Long titles/bodies clamp to two lines.
  */
 export function LatestUpdate({ onOpen, excerptLength = 140 }: Props) {
-  // `theme` for the eyebrow glyph's brand fill; `styles` is a hook, so it has to
-  // resolve above the early return below.
-  const { theme } = useFeedockContext();
+  // `styles` is a hook, so it has to resolve above the early return below.
   const styles = useStyles(latestUpdateStyles);
   const { update, visible, gone, markSeen, dismiss } = useLatestUpdate();
   const [ctaHover, setCtaHover] = useState(false);
@@ -45,23 +42,10 @@ export function LatestUpdate({ onOpen, excerptLength = 140 }: Props) {
       aria-label={`New update: ${update.title}`}
       style={styles.card(visible)}
     >
-      {/* Eyebrow: brand dot + label, with a dedicated close icon-button. */}
-      <div style={styles.eyebrow}>
-        <svg
-          aria-hidden
-          width="15"
-          height="15"
-          viewBox="0 0 24 24"
-          fill={theme.brand}
-          style={styles.icon}
-        >
-          <path d="M12 1.5l2.1 6.4 6.4 2.1-6.4 2.1L12 18.5l-2.1-6.4L3.5 10l6.4-2.1z" />
-          <path
-            d="M18.5 14.5l.9 2.6 2.6.9-2.6.9-.9 2.6-.9-2.6-2.6-.9 2.6-.9z"
-            opacity="0.7"
-          />
-        </svg>
-        <span style={styles.label}>New update</span>
+      {/* Title carries the top row now that the eyebrow is gone; the dismiss
+          button rides alongside it. */}
+      <div style={styles.header}>
+        <h3 style={styles.title}>{update.title}</h3>
         <button
           type="button"
           aria-label="Dismiss"
@@ -73,8 +57,6 @@ export function LatestUpdate({ onOpen, excerptLength = 140 }: Props) {
           ✕
         </button>
       </div>
-
-      <h3 style={styles.title}>{update.title}</h3>
 
       {excerpt ? <p style={styles.excerpt}>{excerpt}</p> : null}
 

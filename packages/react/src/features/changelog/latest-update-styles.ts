@@ -6,9 +6,7 @@ import { clamp } from "./latest-update-text";
 /** Inline-style maps for the "What's New" toast, parameterized by theme + hover. */
 export function latestUpdateStyles(theme: ResolvedTheme): {
   card: (visible: boolean) => CSSProperties;
-  eyebrow: CSSProperties;
-  icon: CSSProperties;
-  label: CSSProperties;
+  header: CSSProperties;
   closeButton: (hover: boolean) => CSSProperties;
   title: CSSProperties;
   excerpt: CSSProperties;
@@ -20,7 +18,11 @@ export function latestUpdateStyles(theme: ResolvedTheme): {
       width: 340,
       maxWidth: "calc(100vw - 40px)",
       boxSizing: "border-box",
-      background: theme.card,
+      // `bg`, not `card` — the toast sits BESIDE the widget panel rather than
+      // inside it, so it takes the panel's own surface color (identical to the
+      // widget shell's `panelBg`). `card` is the elevated tone for things
+      // stacked on top of a surface, and it read as a lighter floating slab.
+      background: theme.bg,
       color: theme.text,
       border: `1px solid ${theme.border}`,
       borderRadius: 16,
@@ -32,17 +34,15 @@ export function latestUpdateStyles(theme: ResolvedTheme): {
       transform: visible ? "translateY(0)" : "translateY(10px)",
       transition: "opacity 0.26s ease, transform 0.26s ease",
     }),
-    eyebrow: { display: "flex", alignItems: "center", gap: 7 },
-    icon: { flexShrink: 0 },
-    label: {
-      fontSize: 11,
-      fontWeight: 700,
-      letterSpacing: 0.5,
-      textTransform: "uppercase",
-      color: theme.brand,
-    },
+    // Title and dismiss share the top row: with the eyebrow gone there's no
+    // other row to hang the close button on, and `flex-start` keeps it pinned
+    // to the first line when the title wraps to two.
+    header: { display: "flex", alignItems: "flex-start", gap: 8 },
     closeButton: (hover: boolean) => ({
-      marginLeft: "auto",
+      flexShrink: 0,
+      // Pull up/right so the glyph optically aligns with the title's cap height
+      // and the card's padding edge rather than sitting inset by its own box.
+      margin: "-4px -4px 0 0",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
@@ -58,9 +58,13 @@ export function latestUpdateStyles(theme: ResolvedTheme): {
       transition: "background 0.15s ease",
     }),
     title: {
-      margin: "10px 0 0",
+      margin: 0,
+      flex: 1,
+      minWidth: 0,
       fontSize: 15,
-      fontWeight: 700,
+      // Medium, not bold — the eyebrow used to carry the emphasis, and at this
+      // size the color/size step against the excerpt is enough hierarchy.
+      fontWeight: 500,
       lineHeight: 1.3,
       color: theme.text,
       ...clamp(2),
@@ -72,24 +76,24 @@ export function latestUpdateStyles(theme: ResolvedTheme): {
       color: theme.muted,
       ...clamp(2),
     },
+    // A text link rather than a filled pill: the toast is an unprompted
+    // interruption, so the action reads better as an offer than a demand.
     cta: (hover: boolean) => ({
-      marginTop: 14,
+      marginTop: 12,
       display: "inline-flex",
       alignItems: "center",
       gap: 6,
+      padding: 0,
       border: "none",
-      background: theme.brand,
-      color: theme.onBrand,
-      borderRadius: 9999,
-      padding: "9px 18px",
+      background: "transparent",
+      color: theme.brand,
       fontSize: 13,
       fontWeight: 600,
       cursor: "pointer",
-      boxShadow: hover
-        ? `0 6px 18px ${theme.brand}55`
-        : `0 2px 8px ${theme.brand}33`,
-      filter: hover ? "brightness(1.06)" : "none",
-      transition: "filter 0.15s ease, box-shadow 0.15s ease",
+      textDecoration: hover ? "underline" : "none",
+      textUnderlineOffset: 3,
+      transition: "opacity 0.15s ease",
+      opacity: hover ? 0.85 : 1,
     }),
     ctaArrow: (hover: boolean) => ({
       display: "inline-block",
