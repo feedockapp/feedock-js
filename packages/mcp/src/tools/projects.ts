@@ -26,6 +26,7 @@ interface McpProjectRow {
   id: string;
   name: string;
   slug: string;
+  readOnly: boolean;
 }
 interface McpProjectsData {
   mcpProjects: McpProjectRow[];
@@ -35,6 +36,13 @@ const ProjectItem = z.object({
   id: uuid,
   name: z.string(),
   slug: z.string(),
+  readOnly: z
+    .boolean()
+    .describe(
+      "true = over the owner's plan project cap, so writes are blocked here " +
+        "(reads still work). Don't attempt edits; tell the user to upgrade or " +
+        "free up a project slot in Settings → Billing.",
+    ),
 });
 
 const ListProjectsOutput = {
@@ -70,7 +78,9 @@ export function registerProjectTools(
       description:
         "The projects this token can work in (all-projects tokens only — a " +
         "project-bound token is refused and needs no selection). Projects " +
-        "with MCP access turned off are not listed. Read-only.",
+        "with MCP access turned off are not listed. Each item has a `readOnly` " +
+        "flag — true means the project is over the owner's plan cap and only " +
+        "reads will succeed. Read-only.",
       inputSchema: {},
       outputSchema: ListProjectsOutput,
       annotations: {
@@ -144,8 +154,15 @@ export function registerProjectTools(
         session.projectName = match.name;
         session.projectSlug = match.slug;
         const out = { project: match };
+        // Warn up front on a soft-locked project so the model doesn't attempt a
+        // write that TenantGuard will reject; reads still work.
+        const text = match.readOnly
+          ? `${JSON.stringify(out)}\nNote: this project is read-only — it's over ` +
+            "the owner's plan project cap, so only reads will succeed. To make " +
+            "changes, upgrade or free up a project slot in Settings → Billing."
+          : JSON.stringify(out);
         return {
-          content: [{ type: "text", text: JSON.stringify(out) }],
+          content: [{ type: "text", text }],
           structuredContent: out,
         };
       } catch (err) {

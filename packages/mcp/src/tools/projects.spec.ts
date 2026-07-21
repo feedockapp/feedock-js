@@ -15,11 +15,13 @@ const P1 = {
   id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
   name: "Mobile App",
   slug: "mobile-app",
+  readOnly: false,
 };
 const P2 = {
   id: "bbbbbbbb-bbbb-4bbb-9bbb-bbbbbbbbbbbb",
   name: "Website",
   slug: "website",
+  readOnly: false,
 };
 
 function catalog(
@@ -40,6 +42,15 @@ describe("feedock_list_projects", () => {
       items: [P1, P2],
       selectedProjectId: P1.id,
     });
+  });
+
+  it("passes the API's readOnly flag through so the model can skip doomed writes", async () => {
+    const locked = { ...P2, readOnly: true };
+    const { cap } = catalog([{ mcpProjects: [P1, locked] }]);
+    const result = await cap.get("feedock_list_projects").run({});
+    const out = result.structuredContent as { items: { readOnly: boolean }[] };
+    expect(out.items[0]?.readOnly).toBe(false);
+    expect(out.items[1]?.readOnly).toBe(true);
   });
 
   it("surfaces the API's bound-token refusal as a tool error", async () => {
@@ -67,6 +78,16 @@ describe("feedock_select_project", () => {
     const { cap, session } = catalog([{ mcpProjects: [P1, P2] }]);
     await cap.get("feedock_select_project").run({ id: P1.id });
     expect(session?.projectId).toBe(P1.id);
+  });
+
+  it("notes read-only when the selected project is over the plan cap", async () => {
+    const locked = { ...P2, readOnly: true };
+    const { cap } = catalog([{ mcpProjects: [P1, locked] }]);
+    const result = await cap
+      .get("feedock_select_project")
+      .run({ slug: locked.slug });
+    expect(result.structuredContent).toEqual({ project: locked });
+    expect((result.content[0] as { text: string }).text).toContain("read-only");
   });
 
   it("rejects an unknown target, names the available projects, and leaves the session untouched", async () => {

@@ -470,6 +470,7 @@ export const MCP_PROJECTS_QUERY = /* GraphQL */ `
       id
       name
       slug
+      readOnly
     }
   }
 `;
