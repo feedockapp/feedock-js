@@ -26,7 +26,10 @@ export function latestUpdateStyles(theme: ResolvedTheme): {
       color: theme.text,
       border: `1px solid ${theme.border}`,
       borderRadius: 16,
-      boxShadow: "0 12px 40px rgba(0,0,0,0.24)",
+      // The same soft two-layer lift as the widget launcher, so the toast and
+      // the pill it floats above read as one system (a tight close shadow + a
+      // wider ambient one) rather than a heavy single drop.
+      boxShadow: "0 1px 3px rgba(0,0,0,0.08), 0 6px 18px rgba(0,0,0,0.10)",
       padding: 16,
       fontFamily:
         "'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif",
