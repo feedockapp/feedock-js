@@ -2,13 +2,13 @@
 
 import { memo, useState } from "react";
 
-import { feedbackListItemStyles } from "./feedback-list-item-styles";
 import { useStyles } from "../../shared/lib/use-styles";
+import { Avatar } from "../../shared/ui/avatar";
+import { SafeHtml } from "../../shared/ui/safe-html";
 import { statusTone } from "../../theme";
 import type { PublicFeedbackListItem } from "../../types";
-import { Avatar } from "../../shared/ui/avatar";
 import { CommentIcon, StatusIcon, VoteArrowIcon } from "./feedback-card-icons";
-import { SafeHtml } from "../../shared/ui/safe-html";
+import { feedbackListItemStyles } from "./feedback-list-item-styles";
 
 export type Props = {
   item: PublicFeedbackListItem;

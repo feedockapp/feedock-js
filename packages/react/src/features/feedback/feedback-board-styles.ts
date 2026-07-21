@@ -1,7 +1,7 @@
 import type { CSSProperties } from "react";
 
-import type { ResolvedTheme } from "../../theme";
 import { surfaceBg, surfaceBorder } from "../../shared/lib/surface";
+import type { ResolvedTheme } from "../../theme";
 
 const BOARD_FONT =
   "'Inter', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif";

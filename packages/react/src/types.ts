@@ -145,6 +145,13 @@ export interface PublicUpdate {
   publishedAt: string;
   /** The member who published it (name + optional avatar), or null. */
   author: PublicAuthor | null;
+  /** PUBLIC, non-hidden comment count (for the "N comments" affordance). */
+  commentCount: number;
+}
+
+/** A single update with its public comment thread (the detail fetch). */
+export interface PublicUpdateDetail extends PublicUpdate {
+  comments: PublicComment[];
 }
 
 export interface PublicPage<T> {

@@ -65,6 +65,7 @@ export function Changelog({
     return (
       <div style={styles.root}>
         <ChangelogDetail
+          key={selected.id}
           update={selected}
           onBack={close}
           hideBack={hideDetailBack}

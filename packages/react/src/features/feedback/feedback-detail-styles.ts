@@ -165,6 +165,10 @@ export function feedbackDetailStyles(theme: ResolvedTheme) {
       color: ERROR_FG,
       margin: 0,
     } as CSSProperties,
-    muted: { fontSize: 13, color: theme.muted, padding: "16px 0" } as CSSProperties,
+    muted: {
+      fontSize: 13,
+      color: theme.muted,
+      padding: "16px 0",
+    } as CSSProperties,
   };
 }

@@ -1,11 +1,13 @@
 import type {
   PublicAttachment,
+  PublicComment,
   PublicFeedbackDetail,
   PublicFeedbackListItem,
   PublicPage,
   PublicProjectConfig,
   PublicRoadmapColumnGroup,
   PublicUpdate,
+  PublicUpdateDetail,
   SimilarFeedback,
 } from "./types";
 
@@ -152,6 +154,11 @@ export class FeedockClient {
 
   getItem(id: string): Promise<PublicFeedbackDetail> {
     return this.request(`/feedback/${encodeURIComponent(id)}`);
+  }
+
+  /** One update (by its per-project slug) with its public comment thread. */
+  getUpdate(entrySlug: string): Promise<PublicUpdateDetail> {
+    return this.request(`/updates/${encodeURIComponent(entrySlug)}`);
   }
 
   getRoadmap(): Promise<PublicRoadmapColumnGroup[]> {
@@ -303,6 +310,19 @@ export class FeedockClient {
 
   comment(token: string, id: string, body: string): Promise<unknown> {
     return this.request(`/feedback/${encodeURIComponent(id)}/comments`, {
+      method: "POST",
+      token,
+      body: JSON.stringify({ body }),
+    });
+  }
+
+  /** Post an account-less comment on an update (by its per-project slug). */
+  commentOnUpdate(
+    token: string,
+    entrySlug: string,
+    body: string,
+  ): Promise<PublicComment> {
+    return this.request(`/updates/${encodeURIComponent(entrySlug)}/comments`, {
       method: "POST",
       token,
       body: JSON.stringify({ body }),

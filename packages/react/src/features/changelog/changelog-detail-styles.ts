@@ -3,6 +3,8 @@ import type { CSSProperties } from "react";
 import type { ResolvedTheme } from "../../theme";
 import { primaryText, secondaryText } from "../../shared/lib/surface";
 
+const ERROR_FG = "#D33A3F";
+
 /**
  * Inline-style map for one published update rendered as an article — category
  * eyebrow, title, why-it-matters lede, byline, body. Shares the panel's tokens
@@ -50,6 +52,69 @@ export function changelogDetailStyles(theme: ResolvedTheme) {
       lineHeight: 1.6,
       color: theme.text,
       wordBreak: "break-word",
+    } as CSSProperties,
+
+    /* --- Comment thread (mirrors feedback-detail-styles) ------------------- */
+    divider: {
+      borderTop: `1px solid ${theme.border}`,
+      margin: "28px 0 0",
+    } as CSSProperties,
+    commentsHead: {
+      display: "flex",
+      alignItems: "center",
+      gap: 6,
+      fontSize: 12,
+      fontWeight: 700,
+      letterSpacing: 0.6,
+      textTransform: "uppercase",
+      color: theme.text,
+      margin: "24px 0 16px",
+    } as CSSProperties,
+    commentsCount: {
+      color: theme.muted,
+      fontWeight: 600,
+      letterSpacing: 0,
+    } as CSSProperties,
+    composer: {
+      display: "flex",
+      flexDirection: "column",
+      gap: 8,
+      marginBottom: 4,
+    } as CSSProperties,
+    textarea: {
+      width: "100%",
+      minHeight: 64,
+      resize: "vertical",
+      padding: "9px 11px",
+      borderRadius: 10,
+      border: `1px solid ${theme.border}`,
+      background: theme.card,
+      color: theme.text,
+      fontSize: 13.5,
+      fontFamily: "inherit",
+      boxSizing: "border-box",
+    } as CSSProperties,
+    postButton: (disabled: boolean) =>
+      ({
+        alignSelf: "flex-end",
+        padding: "7px 16px",
+        borderRadius: 999,
+        border: "none",
+        background: disabled ? theme.subtle : theme.brand,
+        color: disabled ? theme.muted : theme.onBrand,
+        fontSize: 13,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+      }) as CSSProperties,
+    commentError: {
+      fontSize: 12.5,
+      color: ERROR_FG,
+      margin: 0,
+    } as CSSProperties,
+    muted: {
+      fontSize: 13,
+      color: theme.muted,
+      padding: "12px 0",
     } as CSSProperties,
   };
 }

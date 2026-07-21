@@ -1,12 +1,12 @@
 import type { CSSProperties } from "react";
 
-import type { ResolvedTheme } from "../../theme";
 import {
   primaryText,
   secondaryText,
   surfaceBg,
   surfaceBorder,
 } from "../../shared/lib/surface";
+import type { ResolvedTheme } from "../../theme";
 
 /**
  * Inline-style map for one SDK feedback card: a padded content column (title +
