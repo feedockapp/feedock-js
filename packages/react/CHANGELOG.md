@@ -1,5 +1,26 @@
 # @feedock/react
 
+## 0.9.0
+
+### Minor Changes
+
+- fa7e216: Let the host control the panel's typography. Every component styles itself with inline styles (required by the widget's Shadow DOM), which meant font sizes were hardcoded px a host could not reach — a stylesheet can't touch `style={{ fontSize: 14 }}`, and custom properties had nothing to act on.
+
+  Sizes now resolve through `--feedock-font-size`, so one value scales the whole panel:
+
+  ```css
+  :root {
+    --feedock-font-size: 16px;
+    --feedock-font-family: "Inter var", system-ui, sans-serif;
+  }
+  ```
+
+  Sizes are `calc()`-relative to that base rather than `em` (which compounds through nested rows) or `rem` (which resolves against the host's root and would leak their typography in). Unset, the defaults reproduce the previous pixel sizes exactly, so existing embeds and SDK consumers don't shift. `fs()` and the property names are exported for anyone composing their own UI.
+
+### Patch Changes
+
+- 1b13fc9: Soften the `<LatestUpdate>` toast shadow to a lighter two-layer lift (matching the widget launcher), instead of a single heavy drop.
+
 ## 0.8.2
 
 ### Patch Changes

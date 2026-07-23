@@ -1,5 +1,22 @@
 # @feedock/mcp
 
+## 0.6.0
+
+### Minor Changes
+
+- 67d256c: Markdown tables in doc bodies become real tables. `create_doc` / `update_doc`
+  now convert GFM tables (header + delimiter row) into the table markup the doc
+  editor uses, instead of flattening them into a paragraph — and a `get_doc` body
+  round-tripped through `update_doc` keeps the tables it came with. Docs only:
+  every other write surface (tasks, feedback, changelog, roadmap, milestones)
+  leaves a markdown table as readable pipe-separated text, since those surfaces
+  don't render tables.
+- 1b13fc9: Add `feedock_create_milestone` and `feedock_update_milestone`. Milestones were read-only over MCP, so an agent could group tasks under a milestone but never create one — planning containers had to be made in the dashboard first. Creating defaults to Planned + PRIVATE; updating covers the title, description, owner, planning dates, and the Planned → Active → Shipped lifecycle.
+
+  Milestones also carry their planning dates now: `startDate`, `softTargetDate`, and `softTargetPrecision` are settable on both write tools and returned by `feedock_list_milestones` / `feedock_get_milestone`, so a soft target like "Q3 2026" round-trips.
+
+  Progress stays derived from the linked tasks and is not settable. Making a milestone PUBLIC requires `confirm: true`, and so does editing one that is already PUBLIC — its title, status, and live progress show on the public roadmap.
+
 ## 0.5.0
 
 ### Minor Changes
