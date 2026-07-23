@@ -2,7 +2,7 @@
 
 An MCP server that connects Claude, Cursor, or any MCP client to your
 [Feedock](https://feedock.com) project. The model reads your feedback board,
-roadmap, tasks, milestones, docs, and changelog through 31 tools, and writes back
+roadmap, tasks, milestones, docs, and changelog through 33 tools, and writes back
 to all of them — including deleting tasks and emailing the people who asked for a
 feature. Read the gates below before you connect it.
 
@@ -27,10 +27,10 @@ Source: [github.com/feedockapp/feedock-js](https://github.com/feedockapp/feedock
 Nothing to install — `npx` fetches the server. Needs Node 20.19+. Configure it with
 two environment variables:
 
-| Variable | Value |
-| --- | --- |
-| `FEEDOCK_API_URL` | Your API origin, e.g. `https://api.feedock.com`. Plain `http://` is rejected for everything but localhost, since your token would otherwise cross the network in cleartext. |
-| `FEEDOCK_API_TOKEN` | A Personal Access Token (`fdk_pat_…`). Generate one in Settings → API tokens; revoke it there too. |
+| Variable            | Value                                                                                                                                                                       |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `FEEDOCK_API_URL`   | Your API origin, e.g. `https://api.feedock.com`. Plain `http://` is rejected for everything but localhost, since your token would otherwise cross the network in cleartext. |
+| `FEEDOCK_API_TOKEN` | A Personal Access Token (`fdk_pat_…`). Generate one in Settings → API tokens; revoke it there too.                                                                          |
 
 > **Name the server after its project: `feedock-<your-slug>`, not `feedock`.**
 > Clients key servers by name, so a second entry called `feedock` overwrites the
@@ -94,8 +94,9 @@ Tokens come in two scopes:
 docs, and changelog entries, plus `feedock_overview` for a snapshot of the whole
 loop.
 
-**Write**: create and update tasks, docs, roadmap items, and changelog drafts; move
-feedback and task statuses; convert feedback into a roadmap item or a task.
+**Write**: create and update tasks, milestones, docs, roadmap items, and changelog
+drafts; move feedback and task statuses; convert feedback into a roadmap item or a
+task.
 
 Anything public, irreversible, or destructive takes a required `confirm: true`
 argument. Be clear about what that does and doesn't buy you: it forces the model to
@@ -107,16 +108,16 @@ tools. That matters because feedback text is written by strangers, and a feedbac
 body is a natural place to try to talk a model into publishing or deleting
 something.
 
-| Action | Gate |
-| --- | --- |
-| `feedock_publish_changelog` | Preview-first. Call `feedock_preview_changelog_publish`, then pass its `previewToken` + `confirm:true` + `expectedFirstPublish`. The API re-derives the token over the current recipients and rejects if anything moved since the preview. First publish emails verified requesters and changelog subscribers, and moves linked roadmap items to Shipped. Not reversible. Owner/Admin. |
-| `feedock_move_roadmap_item` → Shipped | `confirm:true`. Emails everyone who asked. Not reversible, and not idempotent — re-shipping rewrites `shippedAt`. Owner/Admin. |
-| `feedock_merge_feedback` | `confirm:true` + `expectedCanonicalTitle`, checked against the live title before the fold as a race guard. Votes, follows, and comments move onto the canonical. Not reversible. Owner/Admin. |
-| `feedock_delete_task` | `confirm:true`. Permanent. Subtasks are not deleted — they re-parent to top level. |
-| `feedock_delete_doc` | `confirm:true`. Permanent; the doc's annotations cascade with it. |
-| `feedock_add_feedback_comment` | `confirm:true`. The reply is publicly visible. |
-| `feedock_create_roadmap_item`, `feedock_convert_feedback_to_roadmap` | `confirm:true` when the item is PUBLIC. Convert defaults to PUBLIC. |
-| `feedock_create_doc`, `feedock_update_doc` | `confirm:true` when visibility is PUBLIC — it puts the doc on your portal. |
+| Action                                                               | Gate                                                                                                                                                                                                                                                                                                                                                                                   |
+| -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `feedock_publish_changelog`                                          | Preview-first. Call `feedock_preview_changelog_publish`, then pass its `previewToken` + `confirm:true` + `expectedFirstPublish`. The API re-derives the token over the current recipients and rejects if anything moved since the preview. First publish emails verified requesters and changelog subscribers, and moves linked roadmap items to Shipped. Not reversible. Owner/Admin. |
+| `feedock_move_roadmap_item` → Shipped                                | `confirm:true`. Emails everyone who asked. Not reversible, and not idempotent — re-shipping rewrites `shippedAt`. Owner/Admin.                                                                                                                                                                                                                                                         |
+| `feedock_merge_feedback`                                             | `confirm:true` + `expectedCanonicalTitle`, checked against the live title before the fold as a race guard. Votes, follows, and comments move onto the canonical. Not reversible. Owner/Admin.                                                                                                                                                                                          |
+| `feedock_delete_task`                                                | `confirm:true`. Permanent. Subtasks are not deleted — they re-parent to top level.                                                                                                                                                                                                                                                                                                     |
+| `feedock_delete_doc`                                                 | `confirm:true`. Permanent; the doc's annotations cascade with it.                                                                                                                                                                                                                                                                                                                      |
+| `feedock_add_feedback_comment`                                       | `confirm:true`. The reply is publicly visible.                                                                                                                                                                                                                                                                                                                                         |
+| `feedock_create_roadmap_item`, `feedock_convert_feedback_to_roadmap` | `confirm:true` when the item is PUBLIC. Convert defaults to PUBLIC.                                                                                                                                                                                                                                                                                                                    |
+| `feedock_create_doc`, `feedock_update_doc`                           | `confirm:true` when visibility is PUBLIC — it puts the doc on your portal.                                                                                                                                                                                                                                                                                                             |
 
 Three properties hold across every tool:
 

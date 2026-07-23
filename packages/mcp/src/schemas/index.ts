@@ -69,6 +69,20 @@ export const MILESTONE_STATUS = ["Planned", "Active", "Shipped"] as const;
 export const MilestoneStatusEnum = z.enum(MILESTONE_STATUS);
 export type MilestoneStatus = (typeof MILESTONE_STATUS)[number];
 
+/**
+ * How precise a soft target date is. The stored date holds the period START, so
+ * `2026-07-01` + `Quarter` reads as "Q3 2026". `null` = a concrete day.
+ */
+export const DATE_PRECISION = [
+  "Day",
+  "Month",
+  "Quarter",
+  "HalfYear",
+  "Year",
+] as const;
+export const DatePrecisionEnum = z.enum(DATE_PRECISION);
+export type DatePrecision = (typeof DATE_PRECISION)[number];
+
 export const CHANGELOG_STATE = ["Draft", "Review", "Published"] as const;
 export const ChangelogStateEnum = z.enum(CHANGELOG_STATE);
 export type ChangelogState = (typeof CHANGELOG_STATE)[number];
@@ -219,6 +233,14 @@ export const MilestoneItem = z.object({
   taskCount: z.number().int().min(0),
   doneTaskCount: z.number().int().min(0),
   ownerId: uuid.nullable(),
+  startDate: z.string().nullable().describe("ISO-8601 planned start"),
+  softTargetDate: z
+    .string()
+    .nullable()
+    .describe("ISO-8601 aspirational target — never enforced"),
+  softTargetPrecision: DatePrecisionEnum.nullable().describe(
+    "how precise softTargetDate is (the date holds the period START); null = a concrete day",
+  ),
 });
 
 export const ChangelogItem = z.object({

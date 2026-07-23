@@ -296,6 +296,9 @@ const MILESTONE_FIELDS = /* GraphQL */ `
   taskCount
   doneTaskCount
   ownerId
+  startDate
+  softTargetDate
+  softTargetPrecision
 `;
 
 export const MILESTONES_QUERY = /* GraphQL */ `
@@ -332,6 +335,37 @@ export const MILESTONE_QUERY = /* GraphQL */ `
         visibility
         updatedAt
       }
+    }
+  }
+`;
+
+/**
+ * Just the visibility — the update tool's PUBLIC gate has to know whether the
+ * milestone is ALREADY public (editing live public copy is a public write), and
+ * pulling the full `milestone(id)` detail (tasks + roadmap items + docs) to read
+ * one enum would be wasteful.
+ */
+export const MILESTONE_VISIBILITY_QUERY = /* GraphQL */ `
+  query MilestoneVisibility($id: ID!) {
+    milestone(id: $id) {
+      id
+      visibility
+    }
+  }
+`;
+
+export const CREATE_MILESTONE_MUTATION = /* GraphQL */ `
+  mutation CreateMilestone($input: CreateMilestoneInput!) {
+    createMilestone(input: $input) {
+      ${MILESTONE_FIELDS}
+    }
+  }
+`;
+
+export const UPDATE_MILESTONE_MUTATION = /* GraphQL */ `
+  mutation UpdateMilestone($input: UpdateMilestoneInput!) {
+    updateMilestone(input: $input) {
+      ${MILESTONE_FIELDS}
     }
   }
 `;
