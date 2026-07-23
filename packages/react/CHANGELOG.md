@@ -1,5 +1,11 @@
 # @feedock/react
 
+## 0.8.2
+
+### Patch Changes
+
+- e5e22f8: Soften the `<LatestUpdate>` toast shadow to a lighter two-layer lift (matching the widget launcher), instead of a single heavy drop.
+
 ## 0.8.1
 
 ### Patch Changes
