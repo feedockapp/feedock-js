@@ -155,6 +155,13 @@ const IMAGE_ALIGN_VALUES = new Set(["left", "center", "right"]);
 const IMAGE_WIDTH_STYLE = [/^\d{1,3}%$/];
 /** Intrinsic aspect ratio (w/h) so the box reserves height before pixels load. */
 const IMAGE_ASPECT_STYLE = [/^\d+(?:\.\d+)?$/];
+/**
+ * Table/column width, in px. TipTap writes the author's dragged column widths
+ * into a `<colgroup>`, so without this a resized table renders as even columns
+ * on read while the editor still shows the drag. Bounded to 4 digits — a plain
+ * number, no url()/expression surface.
+ */
+const TABLE_WIDTH_STYLE = [/^\d{1,4}px$/];
 
 /**
  * File-card metadata shapes, mirrored from @feedock/ui's lib/editor-media.ts
@@ -186,7 +193,25 @@ const FILE_CARD_TYPE = "attachment-file";
  */
 const DOC_OPTIONS: sanitizeHtml.IOptions = {
   ...OPTIONS,
-  allowedTags: [...(OPTIONS.allowedTags as string[]), "div", "img", "video"],
+  allowedTags: [
+    ...(OPTIONS.allowedTags as string[]),
+    "div",
+    "img",
+    "video",
+    // Tables. Structural elements only — no <caption>/<col>/<colgroup>, and the
+    // cell attributes below are numeric span/width metadata, so a table carries
+    // no scriptable surface. NOT in the public OPTIONS set: account-less
+    // feedback bodies stay plain.
+    "table",
+    "colgroup",
+    "col",
+    "thead",
+    "tbody",
+    "tfoot",
+    "tr",
+    "th",
+    "td",
+  ],
   allowedAttributes: {
     ...OPTIONS.allowedAttributes,
     // The file card is a marked-up anchor (data-type="attachment-file" + display
@@ -206,6 +231,15 @@ const DOC_OPTIONS: sanitizeHtml.IOptions = {
     li: ["data-type", "data-checked"],
     img: ["src", "alt", "data-align", "style"],
     video: ["src", "controls", "preload"],
+    // TipTap writes colspan/rowspan and a colwidth list (column resizing).
+    // `style` is deliberately NOT allowed here — width lives in `colwidth`, and
+    // allowing style on cells would reopen a CSS-injection surface that the
+    // img-only allowedStyles entry keeps narrow.
+    th: ["colspan", "rowspan", "colwidth"],
+    td: ["colspan", "rowspan", "colwidth"],
+    // Column widths only — see TABLE_WIDTH_STYLE.
+    table: ["style"],
+    col: ["style"],
   },
   // `style` is allowed ONLY on img and ONLY as `width:NN%` (the width slider) +
   // `aspect-ratio:<number>` (reserve height before load); sanitize-html
@@ -213,6 +247,8 @@ const DOC_OPTIONS: sanitizeHtml.IOptions = {
   // can't ride along.
   allowedStyles: {
     img: { width: IMAGE_WIDTH_STYLE, "aspect-ratio": IMAGE_ASPECT_STYLE },
+    table: { "min-width": TABLE_WIDTH_STYLE },
+    col: { "min-width": TABLE_WIDTH_STYLE, width: TABLE_WIDTH_STYLE },
   },
   transformTags: {
     ...OPTIONS.transformTags,
