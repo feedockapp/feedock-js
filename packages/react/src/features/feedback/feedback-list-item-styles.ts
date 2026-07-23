@@ -7,6 +7,7 @@ import {
   surfaceBorder,
 } from "../../shared/lib/surface";
 import type { ResolvedTheme } from "../../theme";
+import { fs } from "../../type-scale";
 
 /**
  * Inline-style map for one SDK feedback card: a padded content column (title +
@@ -46,7 +47,7 @@ export function feedbackListItemStyles(theme: ResolvedTheme) {
         fontFamily: "inherit",
       }) as CSSProperties,
     title: {
-      fontSize: 14,
+      fontSize: fs(14),
       fontWeight: 400,
       color: primaryText(theme),
       whiteSpace: "nowrap",
@@ -55,7 +56,7 @@ export function feedbackListItemStyles(theme: ResolvedTheme) {
     } as CSSProperties,
     body: {
       marginTop: 3,
-      fontSize: 13,
+      fontSize: fs(13),
       lineHeight: 1.5,
       color: secondaryText(theme),
       display: "-webkit-box",
@@ -73,7 +74,7 @@ export function feedbackListItemStyles(theme: ResolvedTheme) {
       gap: 8,
       minWidth: 0,
       overflow: "hidden",
-      fontSize: 12,
+      fontSize: fs(12),
       color: secondaryText(theme),
     } as CSSProperties,
     metaItem: {
@@ -139,7 +140,7 @@ export function feedbackListItemStyles(theme: ResolvedTheme) {
     } as CSSProperties,
     voteArrow: { color: theme.brand, display: "flex" } as CSSProperties,
     voteCount: {
-      fontSize: 14,
+      fontSize: fs(14),
       fontWeight: 400,
       color: primaryText(theme),
     } as CSSProperties,

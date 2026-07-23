@@ -2,6 +2,7 @@ import type { CSSProperties } from "react";
 
 import type { ResolvedTheme } from "../../theme";
 import { clamp } from "./latest-update-text";
+import { fs } from "../../type-scale";
 
 /** Inline-style maps for the "What's New" toast, parameterized by theme + hover. */
 export function latestUpdateStyles(theme: ResolvedTheme): {
@@ -55,7 +56,7 @@ export function latestUpdateStyles(theme: ResolvedTheme): {
       border: "none",
       background: hover ? `${theme.muted}22` : "transparent",
       color: theme.muted,
-      fontSize: 16,
+      fontSize: fs(16),
       lineHeight: 1,
       cursor: "pointer",
       transition: "background 0.15s ease",
@@ -64,7 +65,7 @@ export function latestUpdateStyles(theme: ResolvedTheme): {
       margin: 0,
       flex: 1,
       minWidth: 0,
-      fontSize: 15,
+      fontSize: fs(15),
       // Medium, not bold — the eyebrow used to carry the emphasis, and at this
       // size the color/size step against the excerpt is enough hierarchy.
       fontWeight: 500,
@@ -74,7 +75,7 @@ export function latestUpdateStyles(theme: ResolvedTheme): {
     },
     excerpt: {
       margin: "4px 0 0",
-      fontSize: 13,
+      fontSize: fs(13),
       lineHeight: 1.45,
       color: theme.muted,
       ...clamp(2),
@@ -90,7 +91,7 @@ export function latestUpdateStyles(theme: ResolvedTheme): {
       border: "none",
       background: "transparent",
       color: theme.brand,
-      fontSize: 13,
+      fontSize: fs(13),
       fontWeight: 600,
       cursor: "pointer",
       textDecoration: hover ? "underline" : "none",

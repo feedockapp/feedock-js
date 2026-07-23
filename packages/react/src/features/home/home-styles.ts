@@ -2,6 +2,7 @@ import type { CSSProperties } from "react";
 
 import type { ResolvedTheme } from "../../theme";
 import { primaryText, secondaryText, surfaceBorder } from "../../shared/lib/surface";
+import { fs } from "../../type-scale";
 
 /**
  * Inline-style factory for the curated Home tab (no stylesheet; Shadow-DOM safe).
@@ -43,7 +44,7 @@ export function homeStyles(theme: ResolvedTheme) {
       display: "flex",
       alignItems: "center",
       gap: 8,
-      fontSize: 11,
+      fontSize: fs(11),
       fontWeight: 500,
       letterSpacing: 0.5,
       textTransform: "uppercase",
@@ -61,7 +62,7 @@ export function homeStyles(theme: ResolvedTheme) {
       minWidth: 0,
     } as CSSProperties,
     heroAuthorName: {
-      fontSize: 12.5,
+      fontSize: fs(12.5),
       color: secondaryText(theme),
       overflow: "hidden",
       textOverflow: "ellipsis",
@@ -70,7 +71,7 @@ export function homeStyles(theme: ResolvedTheme) {
     // Brightens to the full text tone on hover (the shared tappable affordance).
     heroTitle: (hover = false) =>
       ({
-        fontSize: 18,
+        fontSize: fs(18),
         fontWeight: 400,
         lineHeight: 1.25,
         color: hover ? theme.text : primaryText(theme),
@@ -78,7 +79,7 @@ export function homeStyles(theme: ResolvedTheme) {
         transition: "color 0.12s ease",
       }) as CSSProperties,
     heroExcerpt: {
-      fontSize: 13,
+      fontSize: fs(13),
       lineHeight: 1.5,
       color: secondaryText(theme),
       margin: "8px 0 0",
@@ -99,7 +100,7 @@ export function homeStyles(theme: ResolvedTheme) {
     } as CSSProperties,
     sectionIcon: { display: "inline-flex" } as CSSProperties,
     sectionTitle: {
-      fontSize: 11,
+      fontSize: fs(11),
       fontWeight: 700,
       letterSpacing: 0.6,
       textTransform: "uppercase",
@@ -110,7 +111,7 @@ export function homeStyles(theme: ResolvedTheme) {
         display: "inline-flex",
         alignItems: "center",
         gap: 3,
-        fontSize: 12,
+        fontSize: fs(12),
         color: hover ? theme.text : secondaryText(theme),
         background: "transparent",
         border: "none",
@@ -147,7 +148,7 @@ export function homeStyles(theme: ResolvedTheme) {
     // Brightens on hover (the shared color-brighten affordance).
     rowTitle: (hover = false) =>
       ({
-        fontSize: 13.5,
+        fontSize: fs(13.5),
         fontWeight: 400,
         color: hover ? theme.text : primaryText(theme),
         overflow: "hidden",
@@ -156,7 +157,7 @@ export function homeStyles(theme: ResolvedTheme) {
         transition: "color 0.12s ease",
       }) as CSSProperties,
     rowSub: {
-      fontSize: 12,
+      fontSize: fs(12),
       color: secondaryText(theme),
       marginTop: 2,
     } as CSSProperties,
@@ -166,7 +167,7 @@ export function homeStyles(theme: ResolvedTheme) {
     // sits inside `heroEyebrow`, which is already uppercase, and text-transform
     // inherits.) See shared/lib/format.
     updateDate: {
-      fontSize: 12,
+      fontSize: fs(12),
       fontWeight: 400,
       color: secondaryText(theme),
       width: 48,
@@ -182,7 +183,7 @@ export function homeStyles(theme: ResolvedTheme) {
       padding: "3px 9px",
       borderRadius: 999,
       border: `1px solid ${surfaceBorder(theme)}`,
-      fontSize: 12,
+      fontSize: fs(12),
       fontWeight: 400,
       color: primaryText(theme),
       flexShrink: 0,
@@ -199,7 +200,7 @@ export function homeStyles(theme: ResolvedTheme) {
       }) as CSSProperties,
 
     empty: {
-      fontSize: 12.5,
+      fontSize: fs(12.5),
       color: secondaryText(theme),
       padding: "6px 0",
     } as CSSProperties,

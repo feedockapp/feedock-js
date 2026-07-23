@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 
 import type { ResolvedTheme } from "../../theme";
+import { fs } from "../../type-scale";
 
 /**
  * Inline-style map for one picked-but-not-yet-uploaded file pill: an optional
@@ -34,17 +35,17 @@ export function attachmentPillStyles(theme: ResolvedTheme) {
       overflow: "hidden",
       textOverflow: "ellipsis",
       whiteSpace: "nowrap",
-      fontSize: 12,
+      fontSize: fs(12),
       color: theme.text,
     } as CSSProperties,
-    size: { flexShrink: 0, fontSize: 12, color: theme.muted } as CSSProperties,
+    size: { flexShrink: 0, fontSize: fs(12), color: theme.muted } as CSSProperties,
     remove: {
       flexShrink: 0,
       border: "none",
       background: "transparent",
       color: theme.muted,
       cursor: "pointer",
-      fontSize: 16,
+      fontSize: fs(16),
       lineHeight: 1,
     } as CSSProperties,
   };

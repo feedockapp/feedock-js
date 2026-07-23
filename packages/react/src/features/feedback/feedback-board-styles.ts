@@ -2,6 +2,7 @@ import type { CSSProperties } from "react";
 
 import { surfaceBg, surfaceBorder } from "../../shared/lib/surface";
 import type { ResolvedTheme } from "../../theme";
+import { fs } from "../../type-scale";
 
 const BOARD_FONT =
   "'Inter', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif";
@@ -80,7 +81,7 @@ export function feedbackBoardStyles(theme: ResolvedTheme) {
     } as CSSProperties,
 
     /** The board-level (list/fetch) error line. */
-    error: { fontSize: 13, color: ERROR_FG } as CSSProperties,
+    error: { fontSize: fs(13), color: ERROR_FG } as CSSProperties,
 
     /**
      * The Top/New sort control — a segmented pill (matches the portal's SortTabs):
@@ -112,7 +113,7 @@ export function feedbackBoardStyles(theme: ResolvedTheme) {
         borderRadius: 999,
         border: "none",
         cursor: "pointer",
-        fontSize: 13,
+        fontSize: fs(13),
         fontWeight: 500,
         background: active ? theme.card : "transparent",
         color: active || hover ? theme.text : theme.muted,
@@ -135,7 +136,7 @@ export function feedbackBoardStyles(theme: ResolvedTheme) {
       border: "none",
       background: theme.brand,
       color: theme.onBrand,
-      fontSize: 13,
+      fontSize: fs(13),
       fontWeight: 600,
       cursor: "pointer",
       flexShrink: 0,
@@ -162,7 +163,7 @@ export function feedbackBoardStyles(theme: ResolvedTheme) {
         border: `1px solid ${focus ? theme.brand : surfaceBorder(theme, hover)}`,
         background: surfaceBg(theme),
         color: theme.text,
-        fontSize: 13,
+        fontSize: fs(13),
         boxSizing: "border-box",
         transition: "border-color 0.12s ease",
       }) as CSSProperties,

@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 
 import type { ResolvedTheme } from "../../theme";
+import { fs } from "../../type-scale";
 
 /**
  * Inline-style map for one comment row. Split out of `feedbackDetailStyles`
@@ -18,14 +19,14 @@ export function feedbackCommentRowStyles(theme: ResolvedTheme) {
       display: "flex",
       alignItems: "center",
       gap: 8,
-      fontSize: 12.5,
+      fontSize: fs(12.5),
       marginBottom: 4,
     } as CSSProperties,
     author: { fontWeight: 600, color: theme.text } as CSSProperties,
     // Soft brand-tinted chip (filled, not outlined) — the accent tracks the
     // founder's brand color; color-mix keeps the fill a light tint of it.
     officialBadge: {
-      fontSize: 10.5,
+      fontSize: fs(10.5),
       fontWeight: 600,
       letterSpacing: 0.3,
       color: theme.brand,
@@ -37,12 +38,12 @@ export function feedbackCommentRowStyles(theme: ResolvedTheme) {
     // the string — case is presentation, and upper-casing a localized month in
     // JS misbehaves in some locales. See shared/lib/format.
     time: {
-      fontSize: 12,
+      fontSize: fs(12),
       color: theme.muted,
       textTransform: "uppercase",
     } as CSSProperties,
     body: {
-      fontSize: 13.5,
+      fontSize: fs(13.5),
       lineHeight: 1.5,
       color: theme.text,
     } as CSSProperties,

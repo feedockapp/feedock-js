@@ -2,6 +2,7 @@ import type { CSSProperties } from "react";
 
 import { secondaryText } from "../../shared/lib/surface";
 import type { ResolvedTheme } from "../../theme";
+import { fs } from "../../type-scale";
 
 /**
  * Inline-style map for the board's list area — the empty placeholder and the
@@ -12,7 +13,7 @@ export function feedbackBoardListStyles(theme: ResolvedTheme) {
   return {
     // theme.muted (not secondaryText) — the SDK's placeholder copy tone.
     empty: {
-      fontSize: 13,
+      fontSize: fs(13),
       // One empty-state gray across every surface — matches Home + Roadmap
       // (secondaryText), not the slightly different theme.muted this used before.
       color: secondaryText(theme),

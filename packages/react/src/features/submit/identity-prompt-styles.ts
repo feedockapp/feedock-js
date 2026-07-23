@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 
 import type { ResolvedTheme } from "../../theme";
+import { fs } from "../../type-scale";
 
 /** Inline-style map for the SDK identity prompt, parameterized by the theme. */
 export function identityPromptStyles(theme: ResolvedTheme): {
@@ -19,7 +20,7 @@ export function identityPromptStyles(theme: ResolvedTheme): {
     border: "none",
     background: theme.brand,
     color: theme.onBrand,
-    fontSize: 14,
+    fontSize: fs(14),
     fontWeight: 600,
     cursor: busy ? "default" : "pointer",
     opacity: busy ? 0.7 : 1,
@@ -35,7 +36,7 @@ export function identityPromptStyles(theme: ResolvedTheme): {
       flexDirection: "column",
       gap: 10,
     },
-    helpText: { fontSize: 13, color: theme.muted },
+    helpText: { fontSize: fs(13), color: theme.muted },
     input: {
       width: "100%",
       padding: "8px 10px",
@@ -43,7 +44,7 @@ export function identityPromptStyles(theme: ResolvedTheme): {
       border: `1px solid ${theme.border}`,
       background: theme.bg,
       color: theme.text,
-      fontSize: 14,
+      fontSize: fs(14),
       boxSizing: "border-box",
     },
     actions: { display: "flex", gap: 8 },
@@ -54,7 +55,7 @@ export function identityPromptStyles(theme: ResolvedTheme): {
       color: theme.muted,
       fontWeight: 500,
     },
-    sentText: { fontSize: 13, color: theme.text },
-    error: { fontSize: 12, color: "#D33A3F" },
+    sentText: { fontSize: fs(13), color: theme.text },
+    error: { fontSize: fs(12), color: "#D33A3F" },
   };
 }

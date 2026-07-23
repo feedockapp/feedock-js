@@ -19,6 +19,15 @@ export { Roadmap } from "./features/roadmap";
 export { Changelog } from "./features/changelog";
 export { LatestUpdate } from "./features/changelog";
 export { Spinner } from "./shared/ui/spinner";
+// Host-controllable typography — set `--feedock-font-size` / `--feedock-font-family`
+// to scale the panel's type. `fs()` is exported so the widget shell sizes with us.
+export {
+  fs,
+  BASE_FONT_SIZE,
+  BASE_FONT_SIZE_PX,
+  FONT_SIZE_VAR,
+  FONT_FAMILY_VAR,
+} from "./type-scale";
 export { FeedockClient } from "./client";
 export type {
   FeedbackQuery,

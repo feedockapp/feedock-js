@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 
 import type { ResolvedTheme } from "../../theme";
+import { fs } from "../../type-scale";
 
 /** Inline-style map for the shared "← Back" affordance. */
 export function detailBackStyles(theme: ResolvedTheme) {
@@ -9,7 +10,7 @@ export function detailBackStyles(theme: ResolvedTheme) {
       display: "inline-flex",
       alignItems: "center",
       gap: 6,
-      fontSize: 13,
+      fontSize: fs(13),
       fontWeight: 600,
       color: theme.muted,
       background: "transparent",

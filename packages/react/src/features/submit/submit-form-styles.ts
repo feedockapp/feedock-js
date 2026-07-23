@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 
 import type { ResolvedTheme } from "../../theme";
+import { fs } from "../../type-scale";
 
 /** Inline-style map for the SDK composer, parameterized by the resolved theme. */
 export function submitFormStyles(theme: ResolvedTheme): {
@@ -28,7 +29,7 @@ export function submitFormStyles(theme: ResolvedTheme): {
     border: `1px solid ${theme.border}`,
     background: theme.bg,
     color: theme.text,
-    fontSize: 14,
+    fontSize: fs(14),
     boxSizing: "border-box",
     fontFamily: "inherit",
   };
@@ -39,7 +40,7 @@ export function submitFormStyles(theme: ResolvedTheme): {
     border: `1px solid ${theme.border}`,
     background: "transparent",
     color: theme.text,
-    fontSize: 13,
+    fontSize: fs(13),
     cursor: "pointer",
   };
 
@@ -65,7 +66,7 @@ export function submitFormStyles(theme: ResolvedTheme): {
       border: "none",
       background: theme.brand,
       color: theme.onBrand,
-      fontSize: 14,
+      fontSize: fs(14),
       fontWeight: 600,
       cursor: "pointer",
       opacity: busy ? 0.7 : 1,
@@ -76,7 +77,7 @@ export function submitFormStyles(theme: ResolvedTheme): {
       border: "none",
       background: "transparent",
       color: theme.muted,
-      fontSize: 14,
+      fontSize: fs(14),
       cursor: "pointer",
     },
     actions: { display: "flex", gap: 8 },
@@ -85,7 +86,7 @@ export function submitFormStyles(theme: ResolvedTheme): {
       display: "flex",
       alignItems: "center",
       gap: 8,
-      fontSize: 13,
+      fontSize: fs(13),
       color: theme.muted,
       cursor: "pointer",
     },
@@ -103,7 +104,7 @@ export function submitFormStyles(theme: ResolvedTheme): {
       alignItems: "center",
       justifyContent: "center",
     }),
-    error: { fontSize: 12, color: "#D33A3F" },
+    error: { fontSize: fs(12), color: "#D33A3F" },
     suggestions: {
       border: `1px solid ${theme.border}`,
       borderRadius: 8,
@@ -114,7 +115,7 @@ export function submitFormStyles(theme: ResolvedTheme): {
       gap: 6,
     },
     suggestionsTitle: {
-      fontSize: 12,
+      fontSize: fs(12),
       fontWeight: 600,
       color: theme.muted,
     },
@@ -125,7 +126,7 @@ export function submitFormStyles(theme: ResolvedTheme): {
       gap: 8,
     },
     suggestionText: {
-      fontSize: 13,
+      fontSize: fs(13),
       color: theme.text,
       overflow: "hidden",
       textOverflow: "ellipsis",
@@ -138,7 +139,7 @@ export function submitFormStyles(theme: ResolvedTheme): {
       border: `1px solid ${voted ? theme.brand : theme.border}`,
       background: voted ? theme.brand : "transparent",
       color: voted ? theme.onBrand : theme.text,
-      fontSize: 12,
+      fontSize: fs(12),
       fontWeight: 600,
       cursor: voted ? "default" : "pointer",
     }),

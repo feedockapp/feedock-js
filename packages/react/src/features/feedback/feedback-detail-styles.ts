@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 
 import type { ResolvedTheme } from "../../theme";
+import { fs } from "../../type-scale";
 
 /** Error red, shared with the board's error line. */
 const ERROR_FG = "#D33A3F";
@@ -12,7 +13,7 @@ export function feedbackDetailStyles(theme: ResolvedTheme) {
       display: "inline-flex",
       alignItems: "center",
       gap: 6,
-      fontSize: 13,
+      fontSize: fs(13),
       fontWeight: 600,
       color: theme.muted,
       background: "transparent",
@@ -34,7 +35,7 @@ export function feedbackDetailStyles(theme: ResolvedTheme) {
       minWidth: 0,
     } as CSSProperties,
     bylineName: {
-      fontSize: 15,
+      fontSize: fs(15),
       fontWeight: 700,
       color: theme.text,
       lineHeight: 1.2,
@@ -47,21 +48,21 @@ export function feedbackDetailStyles(theme: ResolvedTheme) {
     // JS misbehaves in some locales. See shared/lib/format.
     bylineDate: (standalone = false) =>
       ({
-        fontSize: 12.5,
+        fontSize: fs(12.5),
         color: theme.muted,
         marginTop: 2,
         textTransform: "uppercase",
         ...(standalone ? { marginBottom: 16 } : {}),
       }) as CSSProperties,
     title: {
-      fontSize: 21,
+      fontSize: fs(21),
       fontWeight: 600,
       lineHeight: 1.25,
       color: theme.text,
       margin: 0,
     } as CSSProperties,
     body: {
-      fontSize: 14,
+      fontSize: fs(14),
       lineHeight: 1.6,
       color: theme.text,
       marginTop: 10,
@@ -82,7 +83,7 @@ export function feedbackDetailStyles(theme: ResolvedTheme) {
       display: "inline-flex",
       alignItems: "center",
       gap: 6,
-      fontSize: 13,
+      fontSize: fs(13),
       fontWeight: 400,
       color: theme.muted,
     } as CSSProperties,
@@ -102,7 +103,7 @@ export function feedbackDetailStyles(theme: ResolvedTheme) {
         flexShrink: 0,
       }) as CSSProperties,
     voteCaret: { color: theme.brand, display: "inline-flex" } as CSSProperties,
-    voteNum: { fontSize: 14, fontWeight: 700 } as CSSProperties,
+    voteNum: { fontSize: fs(14), fontWeight: 700 } as CSSProperties,
 
     // Solid hairline between the item and its comments.
     divider: {
@@ -114,7 +115,7 @@ export function feedbackDetailStyles(theme: ResolvedTheme) {
       display: "flex",
       alignItems: "center",
       gap: 6,
-      fontSize: 12,
+      fontSize: fs(12),
       fontWeight: 700,
       letterSpacing: 0.6,
       textTransform: "uppercase",
@@ -144,7 +145,7 @@ export function feedbackDetailStyles(theme: ResolvedTheme) {
       border: `1px solid ${theme.border}`,
       background: theme.card,
       color: theme.text,
-      fontSize: 13.5,
+      fontSize: fs(13.5),
       fontFamily: "inherit",
       boxSizing: "border-box",
     } as CSSProperties,
@@ -156,17 +157,17 @@ export function feedbackDetailStyles(theme: ResolvedTheme) {
         border: "none",
         background: disabled ? theme.subtle : theme.brand,
         color: disabled ? theme.muted : theme.onBrand,
-        fontSize: 13,
+        fontSize: fs(13),
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
       }) as CSSProperties,
     commentError: {
-      fontSize: 12.5,
+      fontSize: fs(12.5),
       color: ERROR_FG,
       margin: 0,
     } as CSSProperties,
     muted: {
-      fontSize: 13,
+      fontSize: fs(13),
       color: theme.muted,
       padding: "16px 0",
     } as CSSProperties,

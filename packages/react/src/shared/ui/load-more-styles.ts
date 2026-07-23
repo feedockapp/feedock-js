@@ -2,6 +2,7 @@ import type { CSSProperties } from "react";
 
 import type { ResolvedTheme } from "../../theme";
 import { secondaryText, surfaceBorder } from "../lib/surface";
+import { fs } from "../../type-scale";
 
 /** The centered "Load more" control shared by the board + changelog lists. */
 export function loadMoreStyles(theme: ResolvedTheme) {
@@ -21,7 +22,7 @@ export function loadMoreStyles(theme: ResolvedTheme) {
       border: `1px solid ${surfaceBorder(theme, hover && !disabled)}`,
       background: "transparent",
       color: hover && !disabled ? theme.text : secondaryText(theme),
-      fontSize: 12.5,
+      fontSize: fs(12.5),
       fontWeight: 500,
       fontFamily: "inherit",
       cursor: disabled ? "default" : "pointer",

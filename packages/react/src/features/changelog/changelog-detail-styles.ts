@@ -2,6 +2,7 @@ import type { CSSProperties } from "react";
 
 import type { ResolvedTheme } from "../../theme";
 import { primaryText, secondaryText } from "../../shared/lib/surface";
+import { fs } from "../../type-scale";
 
 const ERROR_FG = "#D33A3F";
 
@@ -15,7 +16,7 @@ export function changelogDetailStyles(theme: ResolvedTheme) {
     /* The category leads the article, above the title. */
     eyebrow: {
       marginTop: 12,
-      fontSize: 11,
+      fontSize: fs(11),
       fontWeight: 600,
       letterSpacing: 0.4,
       textTransform: "uppercase",
@@ -23,14 +24,14 @@ export function changelogDetailStyles(theme: ResolvedTheme) {
     } as CSSProperties,
     title: {
       margin: "8px 0 0",
-      fontSize: 20,
+      fontSize: fs(20),
       fontWeight: 500,
       lineHeight: 1.25,
       color: primaryText(theme),
     } as CSSProperties,
     whyItMatters: {
       margin: "6px 0 0",
-      fontSize: 14,
+      fontSize: fs(14),
       lineHeight: 1.5,
       color: secondaryText(theme),
     } as CSSProperties,
@@ -41,14 +42,14 @@ export function changelogDetailStyles(theme: ResolvedTheme) {
       alignItems: "center",
       gap: 8,
       flexWrap: "wrap",
-      fontSize: 12.5,
+      fontSize: fs(12.5),
       color: secondaryText(theme),
     } as CSSProperties,
     // The name lifts out of the byline's secondary tone.
     authorName: { color: primaryText(theme) } as CSSProperties,
     body: {
       marginTop: 14,
-      fontSize: 14,
+      fontSize: fs(14),
       lineHeight: 1.6,
       color: theme.text,
       wordBreak: "break-word",
@@ -63,7 +64,7 @@ export function changelogDetailStyles(theme: ResolvedTheme) {
       display: "flex",
       alignItems: "center",
       gap: 6,
-      fontSize: 12,
+      fontSize: fs(12),
       fontWeight: 700,
       letterSpacing: 0.6,
       textTransform: "uppercase",
@@ -90,7 +91,7 @@ export function changelogDetailStyles(theme: ResolvedTheme) {
       border: `1px solid ${theme.border}`,
       background: theme.card,
       color: theme.text,
-      fontSize: 13.5,
+      fontSize: fs(13.5),
       fontFamily: "inherit",
       boxSizing: "border-box",
     } as CSSProperties,
@@ -102,17 +103,17 @@ export function changelogDetailStyles(theme: ResolvedTheme) {
         border: "none",
         background: disabled ? theme.subtle : theme.brand,
         color: disabled ? theme.muted : theme.onBrand,
-        fontSize: 13,
+        fontSize: fs(13),
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
       }) as CSSProperties,
     commentError: {
-      fontSize: 12.5,
+      fontSize: fs(12.5),
       color: ERROR_FG,
       margin: 0,
     } as CSSProperties,
     muted: {
-      fontSize: 13,
+      fontSize: fs(13),
       color: theme.muted,
       padding: "12px 0",
     } as CSSProperties,

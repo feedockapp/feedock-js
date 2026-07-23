@@ -2,6 +2,7 @@ import type { CSSProperties } from "react";
 
 import type { ResolvedTheme } from "../../theme";
 import { primaryText, secondaryText, surfaceBg, surfaceBorder } from "../../shared/lib/surface";
+import { fs } from "../../type-scale";
 
 /**
  * Inline-style map for the SDK roadmap — vertical status sections (Now / Next /
@@ -21,7 +22,7 @@ export function roadmapStyles(theme: ResolvedTheme) {
       flexDirection: "column",
       gap: 26,
     } as CSSProperties,
-    message: { fontSize: 13, color: secondaryText(theme) } as CSSProperties,
+    message: { fontSize: fs(13), color: secondaryText(theme) } as CSSProperties,
 
     /* ---- section (a column, stacked) ---- */
     column: { display: "flex", flexDirection: "column" } as CSSProperties,
@@ -33,13 +34,13 @@ export function roadmapStyles(theme: ResolvedTheme) {
     } as CSSProperties,
     columnIcon: { display: "inline-flex", flexShrink: 0 } as CSSProperties,
     columnTitle: {
-      fontSize: 14,
+      fontSize: fs(14),
       fontWeight: 600,
       color: primaryText(theme),
     } as CSSProperties,
     count: {
       marginLeft: "auto",
-      fontSize: 12,
+      fontSize: fs(12),
       fontWeight: 600,
       color: secondaryText(theme),
     } as CSSProperties,
@@ -108,7 +109,7 @@ export function roadmapStyles(theme: ResolvedTheme) {
       ({
         flex: 1,
         minWidth: 0,
-        fontSize: 14,
+        fontSize: fs(14),
         fontWeight: 400,
         color: hover ? theme.text : primaryText(theme),
         overflow: "hidden",
@@ -118,13 +119,13 @@ export function roadmapStyles(theme: ResolvedTheme) {
       }) as CSSProperties,
     date: {
       flexShrink: 0,
-      fontSize: 12.5,
+      fontSize: fs(12.5),
       color: secondaryText(theme),
       whiteSpace: "nowrap",
     } as CSSProperties,
     description: {
       marginTop: 4,
-      fontSize: 13,
+      fontSize: fs(13),
       lineHeight: 1.45,
       color: secondaryText(theme),
       display: "-webkit-box",
@@ -140,7 +141,7 @@ export function roadmapStyles(theme: ResolvedTheme) {
       padding: "3px 9px",
       borderRadius: 999,
       border: `1px solid ${surfaceBorder(theme)}`,
-      fontSize: 12,
+      fontSize: fs(12),
       color: primaryText(theme),
     } as CSSProperties,
     // The requester row (avatar + name) at the bottom of an item.
@@ -149,7 +150,7 @@ export function roadmapStyles(theme: ResolvedTheme) {
       display: "flex",
       alignItems: "center",
       gap: 6,
-      fontSize: 12,
+      fontSize: fs(12),
       color: secondaryText(theme),
       minWidth: 0,
     } as CSSProperties,
@@ -168,7 +169,7 @@ export function roadmapStyles(theme: ResolvedTheme) {
         marginTop: 2,
         // Rail (17) + gap (8) — lines up with the item text column.
         marginLeft: 25,
-        fontSize: 12.5,
+        fontSize: fs(12.5),
         color: hover ? theme.text : secondaryText(theme),
         background: "transparent",
         border: "none",
@@ -189,7 +190,7 @@ export function roadmapStyles(theme: ResolvedTheme) {
       display: "flex",
       justifyContent: "space-between",
       gap: 8,
-      fontSize: 12,
+      fontSize: fs(12),
       marginBottom: 6,
     } as CSSProperties,
     milestoneTitle: {
@@ -217,17 +218,17 @@ export function roadmapStyles(theme: ResolvedTheme) {
     /* ---- detail view (one item, opened from the timeline) ---- */
     // The byline name — heavier than a card's, it's the "who asked first" anchor.
     detailAuthorName: {
-      fontSize: 14,
+      fontSize: fs(14),
       fontWeight: 500,
       color: primaryText(theme),
       overflow: "hidden",
       textOverflow: "ellipsis",
       whiteSpace: "nowrap",
     } as CSSProperties,
-    detailShipped: { fontSize: 12, color: secondaryText(theme) } as CSSProperties,
+    detailShipped: { fontSize: fs(12), color: secondaryText(theme) } as CSSProperties,
     detailTitle: {
       margin: "14px 0 0",
-      fontSize: 17,
+      fontSize: fs(17),
       fontWeight: 400,
       lineHeight: 1.3,
       color: primaryText(theme),
@@ -236,7 +237,7 @@ export function roadmapStyles(theme: ResolvedTheme) {
     // primaryText — the detail's prose is the one place we want full contrast.
     detailDescription: {
       marginTop: 10,
-      fontSize: 14,
+      fontSize: fs(14),
       lineHeight: 1.6,
       color: theme.text,
       wordBreak: "break-word",
@@ -255,12 +256,12 @@ export function roadmapStyles(theme: ResolvedTheme) {
       display: "inline-flex",
       alignItems: "center",
       gap: 6,
-      fontSize: 12.5,
+      fontSize: fs(12.5),
       fontWeight: 600,
       color: secondaryText(theme),
     } as CSSProperties,
     detailPeopleAsked: {
-      fontSize: 12.5,
+      fontSize: fs(12.5),
       color: secondaryText(theme),
     } as CSSProperties,
   };

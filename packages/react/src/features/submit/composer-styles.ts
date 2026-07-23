@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 
 import type { ResolvedTheme } from "../../theme";
+import { fs } from "../../type-scale";
 
 /** Inline-style factory for the full-panel "Give feedback" composer. */
 export function composerStyles(theme: ResolvedTheme) {
@@ -35,7 +36,7 @@ export function composerStyles(theme: ResolvedTheme) {
       border: "none",
       background: "transparent",
       color: theme.text,
-      fontSize: 18,
+      fontSize: fs(18),
       fontWeight: 700,
       outline: "none",
       padding: 0,
@@ -50,7 +51,7 @@ export function composerStyles(theme: ResolvedTheme) {
       border: "none",
       background: "transparent",
       color: theme.text,
-      fontSize: 14.5,
+      fontSize: fs(14.5),
       lineHeight: 1.55,
       outline: "none",
       padding: 0,
@@ -60,7 +61,7 @@ export function composerStyles(theme: ResolvedTheme) {
       display: "flex",
       alignItems: "center",
       gap: 8,
-      fontSize: 13,
+      fontSize: fs(13),
       color: theme.muted,
       cursor: "pointer",
     } as CSSProperties,
@@ -112,10 +113,10 @@ export function composerStyles(theme: ResolvedTheme) {
         border: "none",
         background: disabled ? theme.subtle : theme.brand,
         color: disabled ? theme.muted : theme.onBrand,
-        fontSize: 13.5,
+        fontSize: fs(13.5),
         fontWeight: 600,
         cursor: disabled ? "not-allowed" : "pointer",
       }) as CSSProperties,
-    error: { fontSize: 12.5, color: "#D33A3F" } as CSSProperties,
+    error: { fontSize: fs(12.5), color: "#D33A3F" } as CSSProperties,
   };
 }
