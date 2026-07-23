@@ -9,7 +9,11 @@
 
 import { describe, expect, it } from "vitest";
 
-import { markdownToHtml, toRichTextHtml } from "./markdown.js";
+import {
+  markdownToHtml,
+  toDocRichTextHtml,
+  toRichTextHtml,
+} from "./markdown.js";
 
 describe("markdown wrappers — parity with @feedock/sanitize", () => {
   it("converts markdown blocks + inline", () => {
@@ -24,6 +28,18 @@ describe("markdown wrappers — parity with @feedock/sanitize", () => {
     expect(toRichTextHtml("<p>already <strong>html</strong></p>")).toBe(
       "<p>already <strong>html</strong></p>",
     );
+  });
+
+  it("doc wrapper parses tables; the default wrapper leaves them as prose", () => {
+    const md = "| Field |\n| --- |\n| postType |";
+    expect(toDocRichTextHtml(md)).toContain("<th><p>Field</p></th>");
+    expect(toRichTextHtml(md)).not.toContain("<table");
+  });
+
+  it("doc wrapper round-trips a get_doc body that carries a table", () => {
+    const body =
+      "<p>Intro</p><table><tbody><tr><td><p>x</p></td></tr></tbody></table>";
+    expect(toDocRichTextHtml(body)).toBe(body);
   });
 
   it("never lets HTML smuggled through markdown survive", () => {

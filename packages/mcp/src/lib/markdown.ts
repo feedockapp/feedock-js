@@ -12,6 +12,7 @@
  * published. The runtime behaviour is 100% `@feedock/sanitize`.
  */
 import {
+  MARKDOWN_PROFILE,
   markdownToHtml as markdownToHtmlImpl,
   toRichTextHtml as toRichTextHtmlImpl,
 } from "@feedock/sanitize";
@@ -28,4 +29,14 @@ export function markdownToHtml(markdown: string): string {
  */
 export function toRichTextHtml(body: string): string {
   return toRichTextHtmlImpl(body);
+}
+
+/**
+ * Doc-body variant: targets the DOC allow-list, which carries GFM tables — so a
+ * markdown table becomes a real `<table>`, and a round-tripped `get_doc` body
+ * keeps the tables it came with. Doc bodies only; every other write surface
+ * stays on {@link toRichTextHtml} (tables are a docs-only block).
+ */
+export function toDocRichTextHtml(body: string): string {
+  return toRichTextHtmlImpl(body, MARKDOWN_PROFILE.Doc);
 }

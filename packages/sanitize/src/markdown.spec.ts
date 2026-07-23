@@ -12,7 +12,7 @@
 
 import { describe, expect, it } from "vitest";
 
-import { markdownToHtml, toRichTextHtml } from "./index";
+import { MARKDOWN_PROFILE, markdownToHtml, toRichTextHtml } from "./index";
 
 describe("markdownToHtml — blocks", () => {
   it("converts headings", () => {
@@ -60,6 +60,94 @@ describe("markdownToHtml — blocks", () => {
   it("returns empty for an empty body", () => {
     expect(markdownToHtml("")).toBe("");
     expect(markdownToHtml("   \n  ")).toBe("");
+  });
+});
+
+describe("markdownToHtml — GFM tables (doc profile)", () => {
+  const TABLE_MD = "| Field | Type |\n| --- | :---: |\n| postType | FEED |";
+  const doc = (md: string) => markdownToHtml(md, MARKDOWN_PROFILE.Doc);
+
+  it("parses a table into TipTap's canonical shape", () => {
+    expect(doc(TABLE_MD)).toBe(
+      "<table><tbody>" +
+        "<tr><th><p>Field</p></th><th><p>Type</p></th></tr>" +
+        "<tr><td><p>postType</p></td><td><p>FEED</p></td></tr>" +
+        "</tbody></table>",
+    );
+  });
+
+  it("does NOT parse tables on the default profile (pipes stay readable prose)", () => {
+    const html = markdownToHtml(TABLE_MD);
+    expect(html).not.toContain("<table");
+    // The rows stay visible as pipe-separated text, not run-together cells.
+    expect(html).toContain("| Field | Type |");
+  });
+
+  it("keeps an escaped pipe literal inside a cell", () => {
+    expect(doc("| a \\| b | c |\n| --- | --- |\n| x | y |")).toContain(
+      "<th><p>a | b</p></th>",
+    );
+  });
+
+  it("applies inline formatting inside cells", () => {
+    const html = doc("| **bold** | `code` |\n| --- | --- |\n| x | y |");
+    expect(html).toContain("<th><p><strong>bold</strong></p></th>");
+    expect(html).toContain("<th><p><code>code</code></p></th>");
+  });
+
+  it("pads short rows and drops extra cells (GFM)", () => {
+    const html = doc("| a | b |\n| --- | --- |\n| only |\n| x | y | extra |");
+    expect(html).toContain("<tr><td><p>only</p></td><td><p></p></td></tr>");
+    expect(html).toContain("<tr><td><p>x</p></td><td><p>y</p></td></tr>");
+    expect(html).not.toContain("extra");
+  });
+
+  it("requires a matching delimiter row — a lone pipe line stays a paragraph", () => {
+    const html = doc("| just | prose |\nnot a delimiter");
+    expect(html).not.toContain("<table");
+    expect(html).toContain("| just | prose |");
+  });
+
+  it("does not mistake a delimiter-less rule for a table, or vice versa", () => {
+    // `---` with no pipes is still a rule, even on the doc profile.
+    expect(doc("---")).toBe("<hr />");
+  });
+
+  it("ends the table at a blank line and resumes normal parsing", () => {
+    const html = doc(TABLE_MD + "\n\nAfter the table.");
+    expect(html).toContain("</table><p>After the table.</p>");
+  });
+
+  it("parses a table that ends at EOF without a trailing newline", () => {
+    expect(doc("| a |\n| --- |\n| b |")).toContain("<td><p>b</p></td>");
+  });
+
+  it("block precedence: dash bullets with pipes stay a list, not a table", () => {
+    // "-" satisfies the delimiter-cell shape, so without the block-precedence
+    // gate this parsed as a table with "-" header cells.
+    const html = doc("- | a |\n- | --- |\n- | 1 |");
+    expect(html).not.toContain("<table");
+    expect(html).toContain("<ul>");
+  });
+
+  it("block precedence: a pipe-carrying heading above a dash row stays a heading", () => {
+    const html = doc("# a | b\n--- | ---");
+    expect(html).not.toContain("<table");
+    expect(html).toContain("<h1>a | b</h1>");
+  });
+
+  it("a pipe-carrying heading ENDS the table instead of being eaten as a row", () => {
+    // Without the row-loop gate, "## next | section" became a data row and
+    // "section" (past the header width) was silently dropped.
+    const html = doc("| a |\n| --- |\n| 1 |\n## next | section");
+    expect(html).toContain("</table>");
+    expect(html).toContain("<h2>next | section</h2>");
+  });
+
+  it("escapes HTML smuggled through a cell", () => {
+    const html = doc("| a |\n| --- |\n| <script>alert(1)</script> |");
+    expect(html).not.toContain("<script>");
+    expect(html).toContain("&lt;script&gt;");
   });
 });
 
@@ -134,6 +222,52 @@ describe("markdownToHtml — never trusts its input", () => {
 describe("toRichTextHtml", () => {
   it("converts markdown", () => {
     expect(toRichTextHtml("## Hi")).toBe("<h2>Hi</h2>");
+  });
+
+  // get_doc returns bodies through sanitizeDocHtml (tables kept), so a caller
+  // round-tripping one back through update_doc must not lose its tables.
+  it("doc profile: round-trips an HTML body that contains a table", () => {
+    const body =
+      "<p>Intro</p><table><tbody><tr><th><p>A</p></th></tr>" +
+      "<tr><td><p>b</p></td></tr></tbody></table>";
+    expect(toRichTextHtml(body, MARKDOWN_PROFILE.Doc)).toBe(body);
+  });
+
+  it("default profile: an HTML table body still flattens (docs-only block)", () => {
+    const body = "<p>Intro</p><table><tbody><tr><td><p>b</p></td></tr></tbody></table>";
+    const html = toRichTextHtml(body);
+    expect(html).not.toContain("<table");
+    expect(html).toContain("<p>Intro</p>");
+  });
+
+  // The strict-profile routing must NOT change because of tables: markdown
+  // that merely mentions a table tag in prose still converts as markdown.
+  it("default profile: markdown mentioning <td> in prose still converts", () => {
+    const html = toRichTextHtml(
+      "Repro steps:\n\n- Open the board\n- Inspect the first <td> cell",
+    );
+    expect(html).toContain("<ul>");
+    expect(html).toContain("&lt;td&gt;");
+  });
+
+  // <pre> is the one place stored HTML keeps real newlines — a "# comment"
+  // line inside a round-tripped code block must not reroute the whole body
+  // (tables included) into markdown conversion.
+  it("doc profile: round-trips a body whose code block contains a # comment", () => {
+    const body =
+      "<table><tbody><tr><th><p>H</p></th></tr>" +
+      "<tr><td><p>x</p></td></tr></tbody></table>" +
+      "<pre><code>import x\n# load data\nrun()</code></pre>";
+    expect(toRichTextHtml(body, MARKDOWN_PROFILE.Doc)).toBe(body);
+  });
+
+  it("doc profile: converts markdown tables", () => {
+    const html = toRichTextHtml(
+      "| Field | Type |\n| --- | --- |\n| a | b |",
+      MARKDOWN_PROFILE.Doc,
+    );
+    expect(html).toContain("<th><p>Field</p></th>");
+    expect(html).toContain("<td><p>b</p></td>");
   });
 
   // A caller round-tripping a body we returned must not have it double-escaped.

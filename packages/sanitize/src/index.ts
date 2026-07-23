@@ -395,4 +395,9 @@ export function redactForAi(text: string): string {
 // markdown) and the GitHub Release → changelog ingestion (release notes are
 // markdown). Re-exported last so its `sanitizeRichText` import resolves against
 // the definitions above (both are call-time, so the module cycle is benign).
-export { markdownToHtml, toRichTextHtml } from "./markdown";
+export {
+  markdownToHtml,
+  toRichTextHtml,
+  MARKDOWN_PROFILE,
+  type MarkdownProfile,
+} from "./markdown";

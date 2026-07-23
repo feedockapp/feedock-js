@@ -31,7 +31,7 @@ import {
   UPDATE_DOC_MUTATION,
 } from "../client/operations.js";
 import { toApiToolError, toToolError } from "../lib/errors.js";
-import { toRichTextHtml } from "../lib/markdown.js";
+import { toDocRichTextHtml } from "../lib/markdown.js";
 import { paginate } from "../lib/pagination.js";
 import { sanitizeDocHtml } from "../lib/sanitize.js";
 import {
@@ -111,7 +111,7 @@ const CreateDocInputShape = {
     .string()
     .optional()
     .describe(
-      "the doc body, in MARKDOWN — headings, **bold**, `code`, ```fenced blocks```, lists, > quotes, [links](url). Converted to the dashboard's rich text, so write it for a person to read.",
+      "the doc body, in MARKDOWN — headings, **bold**, `code`, ```fenced blocks```, lists, > quotes, [links](url), and GFM | tables | (header + delimiter row; docs are the one surface that renders them). Converted to the dashboard's rich text, so write it for a person to read.",
     ),
   visibility: VisibilityEnum.optional().describe(
     "defaults to PRIVATE; PUBLIC puts the doc on the public portal and requires confirm:true",
@@ -269,7 +269,7 @@ export function registerDocTools(server: McpServer, ctx: ToolContext): void {
           title: args.title,
           ...(args.type ? { type: args.type } : {}),
           ...(args.body !== undefined
-            ? { body: toRichTextHtml(args.body) }
+            ? { body: toDocRichTextHtml(args.body) }
             : {}),
           ...(args.visibility ? { visibility: args.visibility } : {}),
           ...(args.milestoneId ? { milestoneId: args.milestoneId } : {}),
@@ -319,7 +319,7 @@ export function registerDocTools(server: McpServer, ctx: ToolContext): void {
           ...(args.title !== undefined ? { title: args.title } : {}),
           ...(args.type ? { type: args.type } : {}),
           ...(args.body !== undefined
-            ? { body: toRichTextHtml(args.body) }
+            ? { body: toDocRichTextHtml(args.body) }
             : {}),
           ...(args.visibility ? { visibility: args.visibility } : {}),
           ...(args.milestoneId !== undefined
