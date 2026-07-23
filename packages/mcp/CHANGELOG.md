@@ -1,5 +1,15 @@
 # @feedock/mcp
 
+## 0.5.0
+
+### Minor Changes
+
+- bebbfeb: Add `feedock_create_milestone` and `feedock_update_milestone`. Milestones were read-only over MCP, so an agent could group tasks under a milestone but never create one — planning containers had to be made in the dashboard first. Creating defaults to Planned + PRIVATE; updating covers the title, description, owner, planning dates, and the Planned → Active → Shipped lifecycle.
+
+  Milestones also carry their planning dates now: `startDate`, `softTargetDate`, and `softTargetPrecision` are settable on both write tools and returned by `feedock_list_milestones` / `feedock_get_milestone`, so a soft target like "Q3 2026" round-trips.
+
+  Progress stays derived from the linked tasks and is not settable. Making a milestone PUBLIC requires `confirm: true`, and so does editing one that is already PUBLIC — its title, status, and live progress show on the public roadmap.
+
 ## 0.4.2
 
 ### Patch Changes
