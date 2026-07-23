@@ -162,6 +162,19 @@ const IMAGE_ASPECT_STYLE = [/^\d+(?:\.\d+)?$/];
  * number, no url()/expression surface.
  */
 const TABLE_WIDTH_STYLE = [/^\d{1,4}px$/];
+/**
+ * Per-cell text alignment, the one style a cell may carry. A closed keyword set
+ * — no lengths, no url() — so it adds no CSS-injection surface.
+ */
+const CELL_ALIGN_STYLE = [/^(?:left|center|right)$/];
+
+/**
+ * TipTap's table wrapper class (`renderWrapper`), mirrored in @feedock/ui's
+ * reader. The wrapper is what gives a wide table its own horizontal scroller
+ * instead of pushing the page sideways, so it must survive sanitization — but
+ * only with this exact class.
+ */
+const TABLE_WRAPPER_CLASS = "tableWrapper";
 
 /**
  * File-card metadata shapes, mirrored from @feedock/ui's lib/editor-media.ts
@@ -198,10 +211,11 @@ const DOC_OPTIONS: sanitizeHtml.IOptions = {
     "div",
     "img",
     "video",
-    // Tables. Structural elements only — no <caption>/<col>/<colgroup>, and the
-    // cell attributes below are numeric span/width metadata, so a table carries
-    // no scriptable surface. NOT in the public OPTIONS set: account-less
-    // feedback bodies stay plain.
+    // Tables. Structure + the colgroup that carries dragged column widths; no
+    // <caption>. The cell attributes below are numeric span/width metadata and
+    // the only styles allowed are px widths, so a table carries no scriptable
+    // surface. NOT in the public OPTIONS set: account-less feedback bodies stay
+    // plain.
     "table",
     "colgroup",
     "col",
@@ -231,12 +245,16 @@ const DOC_OPTIONS: sanitizeHtml.IOptions = {
     li: ["data-type", "data-checked"],
     img: ["src", "alt", "data-align", "style"],
     video: ["src", "controls", "preload"],
+    // ONLY the table wrapper's class (allowedClasses pins the value): it gives a
+    // wide table its own horizontal scroller on the read side, matching the
+    // editor. Any other class on stored HTML would reach into the app's styles.
+    div: ["class"],
     // TipTap writes colspan/rowspan and a colwidth list (column resizing).
-    // `style` is deliberately NOT allowed here — width lives in `colwidth`, and
-    // allowing style on cells would reopen a CSS-injection surface that the
-    // img-only allowedStyles entry keeps narrow.
-    th: ["colspan", "rowspan", "colwidth"],
-    td: ["colspan", "rowspan", "colwidth"],
+    // `style` is allowed ONLY for text-align (see CELL_ALIGN_STYLE) — width
+    // lives in `colwidth`, and every other property stays banned so cells add
+    // no CSS-injection surface.
+    th: ["colspan", "rowspan", "colwidth", "style"],
+    td: ["colspan", "rowspan", "colwidth", "style"],
     // Column widths only — see TABLE_WIDTH_STYLE.
     table: ["style"],
     col: ["style"],
@@ -249,7 +267,12 @@ const DOC_OPTIONS: sanitizeHtml.IOptions = {
     img: { width: IMAGE_WIDTH_STYLE, "aspect-ratio": IMAGE_ASPECT_STYLE },
     table: { "min-width": TABLE_WIDTH_STYLE },
     col: { "min-width": TABLE_WIDTH_STYLE, width: TABLE_WIDTH_STYLE },
+    th: { "text-align": CELL_ALIGN_STYLE },
+    td: { "text-align": CELL_ALIGN_STYLE },
   },
+  // The wrapper's class is pinned to the single value TipTap emits — an author
+  // cannot smuggle an arbitrary class name through.
+  allowedClasses: { div: [TABLE_WRAPPER_CLASS] },
   transformTags: {
     ...OPTIONS.transformTags,
     // Keep the strict tier's safe-link forcing (rel/target) AND gate the
